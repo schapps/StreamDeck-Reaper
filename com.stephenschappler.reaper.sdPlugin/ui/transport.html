@@ -2,7 +2,7 @@
 <html>
 
 <head lang="en">
-    <title>Run Action Settings</title>
+    <title>Transport Settings</title>
     <meta charset="utf-8" />
     <script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
     <link rel="stylesheet" href="css/run-action.css" />
@@ -62,28 +62,24 @@
 
     <hr />
 
-    <sdpi-item label="Action ID">
-        <sdpi-textfield setting="actionId" placeholder="e.g. 40044 or _SWS_ABOUT"></sdpi-textfield>
-    </sdpi-item>
-    <sdpi-item label="Action Name">
-        <sdpi-textfield setting="actionName" placeholder="Optional label for the key"></sdpi-textfield>
-    </sdpi-item>
-    <sdpi-item label="Section">
-        <sdpi-select setting="section" default="main">
-            <option value="main">Main</option>
-            <option value="midi_editor" disabled title="Only Main section actions are supported over REAPER's web interface">MIDI Editor</option>
-            <option value="media_explorer" disabled title="Only Main section actions are supported over REAPER's web interface">Media Explorer</option>
+    <sdpi-item label="Function">
+        <sdpi-select id="function-select" setting="function" default="playStop">
+            <option value="play">Play</option>
+            <option value="playStop">Play/Stop</option>
+            <option value="stop">Stop</option>
+            <option value="pause">Pause</option>
+            <option value="record">Record</option>
+            <option value="repeat">Repeat</option>
+            <option value="gotoStart">Go to Start</option>
+            <option value="gotoEnd">Go to End</option>
         </sdpi-select>
     </sdpi-item>
-    <sdpi-item label="Repeat on Hold">
-        <sdpi-checkbox id="repeat-checkbox" setting="repeatOnHold"></sdpi-checkbox>
-    </sdpi-item>
-    <sdpi-item label="Repeat Interval (ms)" id="repeat-interval-item">
-        <sdpi-range setting="repeatIntervalMs" min="50" max="1000" step="10" default="100" showlabels></sdpi-range>
+    <sdpi-item label="Blink Record" id="blink-record-item">
+        <sdpi-checkbox setting="blinkRecord"></sdpi-checkbox>
     </sdpi-item>
 
     <script src="js/setup-panel.js"></script>
-    <script src="js/run-action.js"></script>
+    <script src="js/transport.js"></script>
 </body>
 
 </html>

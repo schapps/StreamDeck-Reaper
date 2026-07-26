@@ -18,6 +18,38 @@
 					"TitleAlignment": "bottom"
 				}
 			]
+		},
+		{
+			"Name": "Transport",
+			"UUID": "com.stephenschappler.reaper.transport",
+			"Icon": "imgs/actions/transport/icon",
+			"Tooltip": "Play, stop, pause, record, repeat, or seek - with live state feedback from REAPER.",
+			"PropertyInspectorPath": "ui/transport.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/transport/key",
+					"TitleAlignment": "bottom"
+				}
+			]
+		},
+		{
+			"Name": "Track Control",
+			"UUID": "com.stephenschappler.reaper.track",
+			"Icon": "imgs/actions/track/icon",
+			"Tooltip": "Mute, solo, record-arm, or select a track - with live state feedback from REAPER.",
+			"PropertyInspectorPath": "ui/track.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/track/key",
+					"TitleAlignment": "bottom"
+				}
+			]
 		}
 	],
 	"Category": "REAPER Control",

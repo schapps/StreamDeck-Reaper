@@ -265,3 +265,41 @@ No item in §3 came back worse than the spec assumed. Two came back better
 (named-ID resolution, toggle-state query) with concrete design upgrades
 above; the rest matched or were left explicitly unverified/deferred rather
 than assumed.
+
+---
+
+## Milestone 3 addendum: Transport action IDs
+
+Spec §6.2 lists action IDs for the Transport key's `function` settings but
+notes they need verifying. Verified live (each fired, `TRANSPORT` checked
+before/after, state fully restored afterward):
+
+| function | action ID | verified how |
+|---|---|---|
+| `play` | `1007` | fired from stopped, confirmed `playState` 0→1 |
+| `playStop` | `40044` | confirmed in Milestone 1 (§3 item 1) |
+| `stop` | `40667` | fired from paused, confirmed `playState`→0 |
+| `pause` | `40073` | fired while playing, confirmed `playState`→2 |
+| `repeat` | `1068` | fired, confirmed `isRepeatOn` flips both directions |
+| `gotoStart` | `40042` | fired, confirmed `positionSeconds`→0 |
+| `gotoEnd` | `40043` | **not conclusively verified** - see below |
+| `record` | `40046` | **not fired** - existence-checked only (`GET/40046` resolves) |
+
+Two caveats, not full unknowns:
+
+- **`gotoEnd` (40043)**: firing it landed on `positionSeconds = 0`, identical
+  to `gotoStart`. That's consistent with either a wrong ID, or a genuinely
+  empty test project (no media past position 0, so "project end" really is
+  0). Couldn't disambiguate without knowing the project's actual content.
+  Kept the spec's ID since it matches REAPER's well-established default
+  action list; flagging so it gets a real look before shipping a project
+  with actual content past position 0.
+- **`record` (40046)**: deliberately not fired this session - starting a
+  record pass on the user's live project (even with no tracks armed) wasn't
+  worth the risk for an ID that already resolves cleanly via existence
+  check. Worth a live confirmation on a scratch project before release.
+
+The spec's table also conflated `play` and `playStop` under a single ID
+(`40044`); they're actually distinct actions - `1007` is a dedicated
+non-toggling Play, `40044` is the Play/Stop toggle. Both are now
+independently mapped in `src/actions/transport.ts`.

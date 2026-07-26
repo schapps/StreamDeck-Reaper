@@ -2,7 +2,7 @@
 <html>
 
 <head lang="en">
-    <title>Run Action Settings</title>
+    <title>Track Control Settings</title>
     <meta charset="utf-8" />
     <script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
     <link rel="stylesheet" href="css/run-action.css" />
@@ -62,28 +62,30 @@
 
     <hr />
 
-    <sdpi-item label="Action ID">
-        <sdpi-textfield setting="actionId" placeholder="e.g. 40044 or _SWS_ABOUT"></sdpi-textfield>
-    </sdpi-item>
-    <sdpi-item label="Action Name">
-        <sdpi-textfield setting="actionName" placeholder="Optional label for the key"></sdpi-textfield>
-    </sdpi-item>
-    <sdpi-item label="Section">
-        <sdpi-select setting="section" default="main">
-            <option value="main">Main</option>
-            <option value="midi_editor" disabled title="Only Main section actions are supported over REAPER's web interface">MIDI Editor</option>
-            <option value="media_explorer" disabled title="Only Main section actions are supported over REAPER's web interface">Media Explorer</option>
+    <sdpi-item label="Track">
+        <sdpi-select id="track-target-select" setting="trackTarget" default="number">
+            <option value="number">Track Number</option>
+            <option value="selected">Selected Track</option>
+            <option value="master">Master</option>
         </sdpi-select>
     </sdpi-item>
-    <sdpi-item label="Repeat on Hold">
-        <sdpi-checkbox id="repeat-checkbox" setting="repeatOnHold"></sdpi-checkbox>
+    <sdpi-item label="Track Number" id="track-number-item">
+        <sdpi-textfield setting="trackNumber" type="number" value-type="number" placeholder="1"></sdpi-textfield>
     </sdpi-item>
-    <sdpi-item label="Repeat Interval (ms)" id="repeat-interval-item">
-        <sdpi-range setting="repeatIntervalMs" min="50" max="1000" step="10" default="100" showlabels></sdpi-range>
+    <sdpi-item label="Function">
+        <sdpi-select setting="function" default="mute">
+            <option value="mute">Mute</option>
+            <option value="solo">Solo</option>
+            <option value="recarm">Record Arm</option>
+            <option value="select">Select</option>
+        </sdpi-select>
+    </sdpi-item>
+    <sdpi-item label="Show Track Name">
+        <sdpi-checkbox setting="showTrackName" default="true"></sdpi-checkbox>
     </sdpi-item>
 
     <script src="js/setup-panel.js"></script>
-    <script src="js/run-action.js"></script>
+    <script src="js/track.js"></script>
 </body>
 
 </html>

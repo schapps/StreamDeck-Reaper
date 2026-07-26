@@ -2,7 +2,6 @@ import streamDeck, {
 	action,
 	KeyDownEvent,
 	KeyUpEvent,
-	SendToPluginEvent,
 	SingletonAction,
 	WillAppearEvent,
 	WillDisappearEvent,
@@ -60,12 +59,6 @@ export class RunAction extends SingletonAction<RunActionSettings> {
 
 	override onKeyUp(ev: KeyUpEvent<RunActionSettings>): void {
 		this.stopRepeating(ev.action.id);
-	}
-
-	override async onSendToPlugin(ev: SendToPluginEvent<JsonObject, RunActionSettings>): Promise<void> {
-		if ((ev.payload as { event?: string })?.event !== "testConnection") return;
-		const result = await connectionManager.current.testConnection();
-		await streamDeck.ui.sendToPropertyInspector({ event: "testConnectionResult", ...result });
 	}
 
 	private async fire(action: KeyDownEvent<RunActionSettings>["action"], actionId: string): Promise<void> {
