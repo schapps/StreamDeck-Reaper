@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <title>Run Action Settings</title>
+    <meta charset="utf-8" />
+    <script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
+    <link rel="stylesheet" href="css/run-action.css" />
+</head>
+
+<body>
+    <div id="setup-panel">
+        <div id="setup-instructions">
+            <sdpi-item label="">
+                <div class="setup-copy">
+                    <p><strong>Connect to REAPER</strong></p>
+                    <ol>
+                        <li>In REAPER, open <strong>Options &rarr; Preferences &rarr; Control/OSC/web</strong></li>
+                        <li>Click <strong>Add</strong>, then choose <strong>Web browser interface</strong></li>
+                        <li>Set the port to <strong>8080</strong> (or any port - just match it below)</li>
+                        <li class="emphasis">Tick <strong>Run on startup</strong>, then click <strong>OK</strong></li>
+                        <li>Click <strong>Test Connection</strong> below</li>
+                    </ol>
+                    <p>REAPER must be running for Stream Deck keys to work.</p>
+                </div>
+            </sdpi-item>
+
+            <sdpi-item label="Host">
+                <sdpi-textfield global setting="host" placeholder="localhost"></sdpi-textfield>
+            </sdpi-item>
+            <sdpi-item label="Port">
+                <sdpi-textfield global setting="port" type="number" value-type="number" placeholder="8080"></sdpi-textfield>
+            </sdpi-item>
+            <sdpi-item label="Username">
+                <sdpi-textfield global setting="username" placeholder="Optional"></sdpi-textfield>
+            </sdpi-item>
+            <sdpi-item label="Password">
+                <sdpi-password global setting="password" placeholder="Optional"></sdpi-password>
+            </sdpi-item>
+            <sdpi-item label="Timeout (ms)">
+                <sdpi-textfield global setting="timeoutMs" type="number" value-type="number" placeholder="2000"></sdpi-textfield>
+            </sdpi-item>
+            <sdpi-item label="">
+                <p class="hint">REAPER's web interface sends credentials unencrypted. Only use this over a network you trust.</p>
+            </sdpi-item>
+
+            <sdpi-item label="">
+                <button id="test-connection-btn" type="button">Test Connection</button>
+            </sdpi-item>
+            <sdpi-item label="" id="test-connection-result-item" class="hidden">
+                <div id="test-connection-result"></div>
+            </sdpi-item>
+        </div>
+
+        <div id="connected-status" class="hidden">
+            <sdpi-item label="">
+                <span class="connected-line">&#9679; Connected to REAPER</span>
+                <button id="show-setup-btn" type="button" class="link-button">Connection settings</button>
+            </sdpi-item>
+        </div>
+    </div>
+
+    <hr />
+
+    <sdpi-item label="Action ID">
+        <sdpi-textfield setting="actionId" placeholder="e.g. 40044 or _SWS_ABOUT"></sdpi-textfield>
+    </sdpi-item>
+    <sdpi-item label="Action Name">
+        <sdpi-textfield setting="actionName" placeholder="Optional label for the key"></sdpi-textfield>
+    </sdpi-item>
+    <sdpi-item label="Section">
+        <sdpi-select setting="section" default="main">
+            <option value="main">Main</option>
+            <option value="midi_editor" disabled title="Only Main section actions are supported over REAPER's web interface">MIDI Editor</option>
+            <option value="media_explorer" disabled title="Only Main section actions are supported over REAPER's web interface">Media Explorer</option>
+        </sdpi-select>
+    </sdpi-item>
+    <sdpi-item label="Repeat on Hold">
+        <sdpi-checkbox id="repeat-checkbox" setting="repeatOnHold"></sdpi-checkbox>
+    </sdpi-item>
+    <sdpi-item label="Repeat Interval (ms)" id="repeat-interval-item">
+        <sdpi-range setting="repeatIntervalMs" min="50" max="1000" step="10" default="100" showlabels></sdpi-range>
+    </sdpi-item>
+
+    <script src="js/run-action.js"></script>
+</body>
+
+</html>

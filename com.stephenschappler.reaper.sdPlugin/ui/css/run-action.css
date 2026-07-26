@@ -1,0 +1,49 @@
+.hidden {
+	display: none !important;
+}
+
+.setup-copy ol {
+	margin: 0;
+	padding-left: 1.2em;
+}
+
+.setup-copy li {
+	margin-bottom: 4px;
+}
+
+.setup-copy li.emphasis {
+	font-weight: bold;
+}
+
+.hint {
+	font-size: 11px;
+	opacity: 0.7;
+	margin: 0;
+}
+
+#test-connection-result {
+	font-size: 12px;
+}
+
+.result-ok {
+	color: #4caf50;
+}
+
+.result-error {
+	color: #e04040;
+}
+
+.connected-line {
+	color: #4caf50;
+}
+
+.link-button {
+	background: none;
+	border: none;
+	color: #6ab0f3;
+	text-decoration: underline;
+	cursor: pointer;
+	padding: 0;
+	margin-left: 8px;
+	font-size: 11px;
+}

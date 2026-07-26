@@ -1,0 +1,47 @@
+{
+	"Name": "REAPER Control",
+	"Version": "0.1.0.0",
+	"Author": "Stephen Schappler",
+	"Actions": [
+		{
+			"Name": "Run Action",
+			"UUID": "com.stephenschappler.reaper.runaction",
+			"Icon": "imgs/actions/runaction/icon",
+			"Tooltip": "Runs a REAPER action (numeric or named command ID) directly, without a hotkey.",
+			"PropertyInspectorPath": "ui/run-action.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/runaction/key",
+					"TitleAlignment": "bottom"
+				}
+			]
+		}
+	],
+	"Category": "REAPER Control",
+	"CategoryIcon": "imgs/plugin/category-icon",
+	"CodePath": "bin/plugin.js",
+	"Description": "Execute REAPER actions directly from Stream Deck over REAPER's built-in web interface.",
+	"Icon": "imgs/plugin/marketplace",
+	"SDKVersion": 3,
+	"Software": {
+		"MinimumVersion": "7.1"
+	},
+	"OS": [
+		{
+			"Platform": "mac",
+			"MinimumVersion": "12"
+		},
+		{
+			"Platform": "windows",
+			"MinimumVersion": "10"
+		}
+	],
+	"Nodejs": {
+		"Version": "24",
+		"Debug": "enabled"
+	},
+	"UUID": "com.stephenschappler.reaper"
+}
