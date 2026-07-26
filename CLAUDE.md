@@ -60,3 +60,22 @@ Plain git repo. Normal commit/PR flow — no special VCS handling needed here.
 Milestone order lives in spec §15. Don't skip ahead to plugin scaffolding
 without checking whether the current milestone's prerequisites (e.g. a
 findings doc, a passing parser test suite) are actually done.
+
+## Commands
+
+Node 20 (installed via `brew install node@20`, keg-only — linked onto PATH).
+
+- `npm test` — vitest, runs once
+- `npm run typecheck` — `tsc --noEmit` over both `src/` and `tests/`
+- `npm run build` — rollup to `com.stephenschappler.reaper.sdPlugin/bin/plugin.js`
+- `npm run watch` — rollup watch mode, restarts the plugin in Stream Deck on each rebuild
+- `npx @elgato/cli restart com.stephenschappler.reaper` — reload the built plugin into a running Stream Deck app
+- `npx @elgato/cli validate com.stephenschappler.reaper.sdPlugin` — validate the manifest/bundle
+
+The PI (`ui/run-action.html` + `ui/js/run-action.js`) talks to the plugin via
+`window.SDPIComponents.streamDeckClient` (from the loaded sdpi-components
+bundle), not a hand-rolled `connectElgatoStreamDeckSocket` — verified
+directly against the v4.0.1 bundle rather than assumed. Global-settings
+form fields use sdpi-components' `global` attribute; `value-type="number"`
+is required on numeric fields (`type="number"` alone only changes the
+native input, not what gets persisted).
