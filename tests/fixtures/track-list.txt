@@ -1,0 +1,24 @@
+# Raw response to GET /_/TRACK (all tracks, including master at index 0)
+# Format: TRACK \t idx \t name \t flags \t vol \t pan \t last_meter_peak \t last_meter_pos \t width/pan2 \t panmode \t sendcnt \t recvcnt \t hwoutcnt \t color
+#
+# flags bitmask (from REAPER's own main.js doc comment, confirmed empirically):
+#   1   folder
+#   2   selected
+#   4   has FX
+#   8   muted
+#   16  soloed
+#   32  solo-in-place (set alongside 16 when SOLO/1 is used)
+#   64  record armed
+#   128 record monitoring on
+#   256 record monitoring auto
+#   512 UNDOCUMENTED - observed set on master and on tracks with FX + monitoring;
+#       main.js does not define this bit. Parser must ignore unknown bits rather
+#       than assume the documented set is exhaustive.
+#
+# color is 0xAARRGGBB, decimal in the wire format.
+
+TRACK	0	MASTER	516	1.000000	0.000000	-1500	-1500	1.000000	0	0	0	1	31391780
+TRACK	1	MIDI Signal	708	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	28677999
+TRACK	2	Roli Control	708	1.000000	0.527559	-1500	-1500	1.000000	5	0	0	0	28677999
+TRACK	3	VIDEO	0	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	21382726
+TRACK	4		2	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507

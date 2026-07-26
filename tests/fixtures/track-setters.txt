@@ -1,0 +1,69 @@
+# Sequence of SET/TRACK/4/... calls against an empty/unused track (idx 4), each
+# immediately followed by ;TRACK/4 in the same batched request to capture the
+# resulting state in one round trip. Baseline flags=2 (selected only).
+
+# request: SET/TRACK/4/MUTE/1;TRACK/4
+TRACK	4		10	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/MUTE/-1;TRACK/4   (toggle form: -1 flips current state)
+TRACK	4		2	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/SOLO/1;TRACK/4   (note: sets BOTH bit16 soloed and bit32 solo-in-place)
+TRACK	4		50	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/SOLO/0;TRACK/4   (explicit 0 also works, not just toggle)
+TRACK	4		2	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/RECARM/1;TRACK/4
+TRACK	4		66	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/RECARM/0;TRACK/4
+# NOTE: color field changed (29080507 -> 33521021) after a recarm on/off cycle.
+# Reproducible side effect, not an encoding artifact - likely a theme-driven
+# per-track recarm color tint that doesn't fully revert. Flag as a quirk;
+# do not treat the color field as a stable identity key.
+TRACK	4		2	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	33521021
+
+# request: SET/TRACK/4/VOL/0.5;TRACK/4   (absolute, 1.0 = 0dB)
+TRACK	4		2	0.500000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/VOL/1.0;TRACK/4  (restore)
+TRACK	4		2	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/VOL/+3;TRACK/4   (relative +3dB, RAW unescaped '+' in URL path)
+# 1.0 * 10^(3/20) = 1.412538 - matches exactly.
+TRACK	4		2	1.412538	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/VOL/1.0;TRACK/4  (restore)
+TRACK	4		2	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/VOL/-3;TRACK/4   (relative -3dB, raw '-' - no encoding hazard)
+# 1.0 * 10^(-3/20) = 0.707946 - matches exactly.
+TRACK	4		2	0.707946	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/VOL/%2B3;TRACK/4  (relative +3dB but '+' PERCENT-ENCODED)
+# BROKEN: result is 0.000000, not the expected relative adjustment. REAPER's
+# path decoder does not treat %2B the same as a raw '+'. The client MUST send
+# the sign character unescaped in the URL path, never percent-encoded.
+TRACK	4		2	0.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/VOL/1.0;TRACK/4  (restore)
+TRACK	4		2	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/PAN/0.3;TRACK/4
+TRACK	4		2	1.000000	0.300000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/PAN/2.0;TRACK/4   (out of range, server clamps to 1.0)
+TRACK	4		2	1.000000	1.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/PAN/0;TRACK/4    (restore)
+TRACK	4		2	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/VOL/10.0;TRACK/4  (absurd value, +20dB - NOT clamped by server!)
+# REAPER accepts this verbatim. The plugin, not REAPER, is responsible for
+# clamping dial/setter input to a sane range (REAPER's own UI fader tops out
+# around +12dB / linear ~3.98).
+TRACK	4		2	10.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507
+
+# request: SET/TRACK/4/VOL/1.0;TRACK/4  (final restore)
+TRACK	4		2	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507

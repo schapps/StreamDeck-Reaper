@@ -1,0 +1,16 @@
+# Semicolon-separated batch requests execute in order; responses concatenate
+# with \n between them, in the same order the commands were listed.
+
+# request: /_/40044;TRANSPORT   (fire play/stop, then query transport - reflects POST-action state)
+TRANSPORT	1	1.045542	1	00:00:01:01	1.3.09
+
+# request: /_/40044;TRANSPORT   (fire again to restore, reflects state after 2nd toggle)
+TRANSPORT	0	1.045553	1	00:00:01:01	1.3.09
+
+# request: /_/NTRACK;TRACK   (multiple distinct query types in one batch, multi-line reply)
+NTRACK	4
+TRACK	0	MASTER	516	1.000000	0.000000	-1500	-1500	1.000000	0	0	0	1	31391780
+TRACK	1	MIDI Signal	708	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	28677999
+TRACK	2	Roli Control	708	1.000000	0.527559	-1500	-1500	1.000000	5	0	0	0	28677999
+TRACK	3	VIDEO	0	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	21382726
+TRACK	4		2	1.000000	0.000000	-1500	-1500	1.000000	5	0	0	0	29080507

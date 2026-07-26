@@ -1,0 +1,4 @@
+# Raw response to GET /_/NTRACK
+# Format: NTRACK \t count  (count = number of non-master tracks)
+
+NTRACK	4

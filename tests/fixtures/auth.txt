@@ -1,0 +1,29 @@
+# HTTP Basic auth behavior when a username:password is configured on the
+# web interface control surface. Credentials are REDACTED - do not put real
+# REAPER web-interface passwords in this repo. Tested live with real
+# credentials in-session; only the response shapes are recorded here.
+
+# request: GET /_/TRANSPORT with NO Authorization header
+HTTP/1.1 401 Unauthorized
+Server:reaper_csurf_www/0.1
+WWW-Authenticate: Basic realm="reaper_www"
+Content-length: 0
+Connection: keep-alive
+
+# request: GET /_/TRANSPORT with WRONG credentials (curl -u wronguser:wrongpass)
+HTTP/1.1 401 Unauthorized
+Server:reaper_csurf_www/0.1
+WWW-Authenticate: Basic realm="reaper_www"
+Content-length: 0
+Connection: keep-alive
+
+# request: GET /_/TRANSPORT with CORRECT credentials (curl -u <redacted>:<redacted>)
+HTTP/1.1 200 OK
+Server:reaper_csurf_www/0.1
+Content-Type: text/plain
+Cache-Control: no-cache, must-revalidate
+Expires: Sat, 26 Jul 1997 05:00:00 GMT
+Content-length: 42
+Connection: keep-alive
+
+TRANSPORT	0	1.045553	1	00:00:01:01	1.3.09

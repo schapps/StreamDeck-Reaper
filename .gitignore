@@ -1,0 +1,8 @@
+node_modules/
+dist/
+build/
+com.stephenschappler.reaper.sdPlugin/bin/
+*.log
+logs/
+.DS_Store
+*.tsbuildinfo

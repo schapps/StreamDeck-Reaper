@@ -1,0 +1,34 @@
+# Raw responses to GET /_/GET/<command_id>
+# Format: CMDSTATE \t command_id \t state    (state: >0 on, 0 off, -1 no state)
+#
+# This is REAPER's documented toggle-state query (from main.js, ships with
+# REAPER itself) - it works for BOTH numeric and named (_-prefixed) command
+# IDs, for ANY caller-supplied ID, not just a fixed whitelist. This directly
+# contradicts the spec's pessimistic assumption in section 3 item 9.
+#
+# Critically: a genuinely unregistered/unresolvable named ID gets an EMPTY
+# response body (Content-length: 0, no CMDSTATE line at all) rather than a
+# CMDSTATE line with -1. This is a reliable, side-effect-free way to test
+# "does this action ID exist" without firing the action - useful for the
+# action browser's "unrecognized ID" warning in spec section 11.
+
+# request: GET/40364   (View: Toggle metronome - has real toggle state)
+CMDSTATE	40364	0
+
+# request: GET/40044   (Transport: Play/stop - not a toggle-state command)
+CMDSTATE	40044	-1
+
+# request: GET/999999999   (nonexistent numeric ID - still resolves w/ -1, not empty)
+CMDSTATE	999999999	-1
+
+# request: GET/_SWS_ABOUT   (real SWS named command - resolves)
+CMDSTATE	_SWS_ABOUT	0
+
+# request: GET/_BOGUSIDNOTREAL   (fabricated named ID - EMPTY response, no CMDSTATE line)
+# (zero bytes returned, Content-length: 0)
+
+# request: GET/_RSba8db1c5bf8a9ba5ba40b9ad5e6189967b612716   (real installed ReaScript custom ID)
+CMDSTATE	_RSba8db1c5bf8a9ba5ba40b9ad5e6189967b612716	-1
+
+# request: GET/_RS0000000000000000000000000000000000000   (fabricated RS-style ID - EMPTY)
+# (zero bytes returned, Content-length: 0)

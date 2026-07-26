@@ -1,0 +1,28 @@
+# Failure mode observations. These are behavioral notes, not literal response
+# bodies, since most produce no HTTP response at all.
+
+# REAPER process not running / web interface not yet applied:
+#   curl exit code 7 ("Failed to connect... Connection refused")
+#   Identical client-side signature to "wrong port" below - the client
+#   cannot distinguish "REAPER isn't running" from "nothing is listening on
+#   this port" without an out-of-band check (e.g. process list), which a
+#   Stream Deck plugin doesn't have. Both must map to the same
+#   "Couldn't reach REAPER" diagnostic message.
+
+# Wrong port (nothing listening on 8081, REAPER itself untouched):
+#   curl exit code 7, same ECONNREFUSED signature as above.
+
+# Busy in a modal dialog (SWS "About" dialog open on screen):
+#   GET /_/TRANSPORT still returned 200 OK in ~33ms - the web server thread
+#   is NOT blocked by a modal dialog on REAPER's main UI thread. This is
+#   BETTER than the spec assumed for read-only state queries. Whether
+#   action-firing requests (bare numeric/named command IDs) queue, execute,
+#   or silently no-op while a modal is open was NOT tested this session -
+#   flagged as an open question for milestone 2 hardening.
+
+# Mid-render: NOT TESTED this session (deferred - no render was triggered
+# against the live project to avoid disrupting the user's session).
+
+# Multiple REAPER instances on different ports: NOT TESTED this session
+# (deferred by explicit user choice - would have required launching a
+# second REAPER process).

@@ -1,0 +1,15 @@
+# GET/EXTSTATE and SET/EXTSTATE round trip
+# Format: EXTSTATE \t section \t key \t value  (value empty string if unset)
+
+# request: GET/EXTSTATE/streamdeck_test/foo   (key never set)
+EXTSTATE	streamdeck_test	foo
+
+# request: SET/EXTSTATE/streamdeck_test/foo/bar123
+# (no response body)
+
+# request: GET/EXTSTATE/streamdeck_test/foo
+EXTSTATE	streamdeck_test	foo	bar123
+
+# request: SET/EXTSTATE/streamdeck_test/foo2/hello%20world   (urlencoded value with space)
+# request: GET/EXTSTATE/streamdeck_test/foo2
+EXTSTATE	streamdeck_test	foo2	hello world
