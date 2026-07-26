@@ -19,14 +19,14 @@ export interface TransportSettings extends JsonObject {
 
 type TransportKeyAction = WillAppearEvent<TransportSettings>["action"];
 
-/** Verified live against a running REAPER instance - see docs/protocol-findings.md Milestone 3 addendum. */
+/** Verified against a real REAPER action-list export - see docs/protocol-findings.md Milestone 3/4 addenda. */
 const FUNCTION_ACTION_ID: Record<TransportFunction, string> = {
-	play: "1007",
-	stop: "40667",
-	pause: "40073",
-	record: "40046",
-	playStop: "40044",
-	repeat: "1068",
+	play: "1007", // Transport: Play
+	stop: "40667", // Transport: Stop (save all recorded media) - deliberately not 1016 (plain Stop), which risks discarding an in-progress recording
+	pause: "1008", // Transport: Pause (not 40073, which is Play/Pause - a toggle, not a dedicated pause)
+	record: "1013", // Transport: Record (not 40046, which is edit-cursor-specific start/stop)
+	playStop: "40044", // Transport: Play/stop
+	repeat: "1068", // Transport: Toggle repeat
 	gotoStart: "40042",
 	gotoEnd: "40043",
 };

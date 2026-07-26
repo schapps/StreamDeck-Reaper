@@ -276,30 +276,48 @@ before/after, state fully restored afterward):
 
 | function | action ID | verified how |
 |---|---|---|
-| `play` | `1007` | fired from stopped, confirmed `playState` 0→1 |
-| `playStop` | `40044` | confirmed in Milestone 1 (§3 item 1) |
-| `stop` | `40667` | fired from paused, confirmed `playState`→0 |
-| `pause` | `40073` | fired while playing, confirmed `playState`→2 |
-| `repeat` | `1068` | fired, confirmed `isRepeatOn` flips both directions |
-| `gotoStart` | `40042` | fired, confirmed `positionSeconds`→0 |
-| `gotoEnd` | `40043` | **not conclusively verified** - see below |
-| `record` | `40046` | **not fired** - existence-checked only (`GET/40046` resolves) |
+| `play` | `1007` | fired from stopped, confirmed `playState` 0→1; name confirmed by export: "Transport: Play" |
+| `playStop` | `40044` | confirmed in Milestone 1 (§3 item 1); export: "Transport: Play/stop" |
+| `stop` | `40667` | fired from paused, confirmed `playState`→0; export: "Transport: Stop (save all recorded media)" |
+| `pause` | `1008` | export: "Transport: Pause" - see correction below, not fire-tested directly |
+| `record` | `1013` | export: "Transport: Record" - see correction below, deliberately not fired |
+| `repeat` | `1068` | fired, confirmed `isRepeatOn` flips both directions; export: "Transport: Toggle repeat" |
+| `gotoStart` | `40042` | fired, confirmed `positionSeconds`→0; export: "Transport: Go to start of project" |
+| `gotoEnd` | `40043` | export: "Transport: Go to end of project" - see correction below |
 
-Two caveats, not full unknowns:
+### Correction (Milestone 4): pause and record were wrong
 
-- **`gotoEnd` (40043)**: firing it landed on `positionSeconds = 0`, identical
-  to `gotoStart`. That's consistent with either a wrong ID, or a genuinely
-  empty test project (no media past position 0, so "project end" really is
-  0). Couldn't disambiguate without knowing the project's actual content.
-  Kept the spec's ID since it matches REAPER's well-established default
-  action list; flagging so it gets a real look before shipping a project
-  with actual content past position 0.
-- **`record` (40046)**: deliberately not fired this session - starting a
-  record pass on the user's live project (even with no tracks armed) wasn't
-  worth the risk for an ID that already resolves cleanly via existence
-  check. Worth a live confirmation on a scratch project before release.
+The user obtained a real action-list export via an SWS action (`ActionList.txt`,
+committed at repo root) after this doc was first written. Cross-referencing it
+against the live-fired IDs above turned up two mistakes from the original
+session, both now fixed in `src/actions/transport.ts`:
 
-The spec's table also conflated `play` and `playStop` under a single ID
-(`40044`); they're actually distinct actions - `1007` is a dedicated
-non-toggling Play, `40044` is the Play/Stop toggle. Both are now
-independently mapped in `src/actions/transport.ts`.
+- **`pause`**: was mapped to `40073`, which the export names "Transport:
+  Play/pause" - a toggle, not a dedicated pause. Firing it while playing
+  (what I tested) happens to look identical to a real pause, which is how
+  the mistake slipped through live-fire verification. The correct dedicated,
+  non-toggling action is `1008` ("Transport: Pause"), sitting in the same
+  low-ID family as `1007` Play - the same pattern that was already right for
+  `play`, and should have been the first place to look for `pause` too.
+- **`record`**: was mapped to `40046` ("Transport: Start/stop recording at
+  edit cursor") - a real action, but a specific variant, not the plain one.
+  The export shows `1013` ("Transport: Record") in the same `1007`/`1008`
+  family. Switched to `1013`, still deliberately not fire-tested - starting
+  a record pass on the user's live project wasn't worth it for a name-level
+  confirmation this clear.
+- **`gotoEnd` (40043)** is confirmed correct by the export's name ("Transport:
+  Go to end of project"), resolving the earlier ambiguity (landing on the
+  same position as `gotoStart` was the test project being short, not a wrong
+  ID).
+- **`stop` (40667)** was deliberately kept over the plainer `1016` ("Transport:
+  Stop", also live-verified to exist) - `40667` explicitly preserves any
+  in-progress recording, while its sibling `40668` explicitly *deletes* it,
+  strongly suggesting `1016`'s behavior mid-recording is unspecified/risky by
+  comparison. A "Stop" key a user reaches for reflexively, possibly while
+  recording, should not gamble on that.
+
+Lesson for later milestones: a live fire-and-observe test proves an action
+does *something* consistent with the hypothesis, not that it's the *specific*
+action the spec intended - name confirmation from an authoritative list
+catches mistakes behavioral testing alone can miss when two actions produce
+overlapping observable effects from the same starting state.

@@ -66,8 +66,9 @@ findings doc, a passing parser test suite) are actually done.
 Node 20 (installed via `brew install node@20`, keg-only — linked onto PATH).
 
 - `npm test` — vitest, runs once
-- `npm run typecheck` — `tsc --noEmit` over both `src/` and `tests/`
-- `npm run build` — rollup to `com.stephenschappler.reaper.sdPlugin/bin/plugin.js`
+- `npm run typecheck` — three `tsc --noEmit` passes: `src/` (Node), `tests/`, and `src/pi/` (browser/DOM)
+- `npm run build` — rollup, two outputs: `bin/plugin.js` (Node backend) and `ui/js/action-browser.js` (PI, browser-targeted)
+- `npm run build:actions` — regenerate `data/actions-native.json` from `tools/ActionList.txt`
 - `npm run watch` — rollup watch mode, restarts the plugin in Stream Deck on each rebuild
 - `npx @elgato/cli restart com.stephenschappler.reaper` — reload the built plugin into a running Stream Deck app
 - `npx @elgato/cli validate com.stephenschappler.reaper.sdPlugin` — validate the manifest/bundle
@@ -79,3 +80,41 @@ directly against the v4.0.1 bundle rather than assumed. Global-settings
 form fields use sdpi-components' `global` attribute; `value-type="number"`
 is required on numeric fields (`type="number"` alone only changes the
 native input, not what gets persisted).
+
+### Two TypeScript "projects", and the tsconfig `exclude` trap
+
+`src/pi/` (currently just `action-browser.ts`) runs in the PI's browser
+context, not Node — it needs the DOM lib and gets its own
+`src/pi/tsconfig.json` and its own rollup output (browser IIFE, not the
+Node-targeted plugin bundle). The root `tsconfig.json` and
+`tests/tsconfig.json` both `exclude: [...]` that directory so their
+Node-context checks don't choke on `document`/`window`.
+
+**If you add a config that `extends` one of these and doesn't declare its
+own `exclude`, it silently inherits the parent's** — including
+`"src/pi"`, which means it excludes *itself* if it lives there, and
+`tsc` "succeeds" having type-checked zero files. This actually happened
+while building the action browser: `npm run typecheck` reported success
+while `rollup -c` failed on the exact same file, because the standalone
+`tsc -p src/pi/tsconfig.json` check was silently a no-op. Any new
+project under `src/pi/` must declare its own explicit `"exclude"`, not
+rely on inheriting one. When a `tsc --noEmit` project reports zero
+errors, that's not the same claim as "checked N files with zero
+errors" — worth confirming the file count when a config's `exclude` was
+touched recently.
+
+## Action database (Milestone 4)
+
+- `tools/ActionList.txt` — raw export dumped via an SWS action against a
+  real REAPER 7.77 instance (`Section\tId\tAction`, all sections). Commit
+  this alongside the generated JSON so a future REAPER version's DB is
+  reproducible: re-dump, rerun `npm run build:actions`.
+- `tools/build-action-db.ts` — filters to `Main` only (the web interface
+  can't address other sections, see findings doc) and applies
+  `tools/curated-tags.ts`. Every tag in that file was checked against a
+  real ID in the export before being added — none are guessed.
+- `src/actiondb/search.ts` — the fuzzy-search ranking, unit-tested
+  (`tests/actiondb/search.test.ts`) and imported directly by
+  `src/pi/action-browser.ts`. Don't hand-duplicate this logic in plain JS
+  for the PI; that's exactly what the separate browser rollup output
+  exists to avoid.

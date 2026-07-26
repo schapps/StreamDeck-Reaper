@@ -1,4 +1,5 @@
 import type { JsonObject } from "@elgato/utils";
+import type { ActionEntry } from "../actiondb/types.js";
 import type { ReaperClientOptions } from "./types.js";
 
 /** Shape of the plugin's global settings (spec section 10). */
@@ -10,6 +11,12 @@ export interface GlobalSettings extends JsonObject {
 	timeoutMs?: number;
 	/** Set true after the first successful connection, so the PI knows whether to show onboarding. */
 	hasConnectedOnce?: boolean;
+	/** Action IDs, most-recent first, capped at 20 (spec section 10). */
+	recentActions?: string[];
+	/** Action IDs starred in the action browser. */
+	favorites?: string[];
+	/** User-imported action list, merged into the bundled native database at browse time (spec section 7.2). */
+	importedActions?: ActionEntry[];
 }
 
 export const GLOBAL_SETTINGS_DEFAULTS: Required<Pick<GlobalSettings, "host" | "port" | "timeoutMs">> = {

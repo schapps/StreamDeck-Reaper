@@ -4,7 +4,8 @@
         "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart com.stephenschappler.reaper\"",
         "test": "vitest run",
         "test:watch": "vitest",
-        "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tests/tsconfig.json"
+        "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tests/tsconfig.json && tsc --noEmit -p src/pi/tsconfig.json",
+        "build:actions": "tsx tools/build-action-db.ts"
     },
     "type": "module",
     "devDependencies": {
@@ -17,6 +18,7 @@
         "@types/node": "~24.1.0",
         "rollup": "^4.0.2",
         "tslib": "^2.6.2",
+        "tsx": "^4.23.1",
         "typescript": "^5.2.2",
         "vitest": "^4.1.10"
     },

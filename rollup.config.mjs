@@ -11,7 +11,7 @@ const sdPlugin = "com.stephenschappler.reaper.sdPlugin";
 /**
  * @type {import('rollup').RollupOptions}
  */
-const config = {
+const pluginConfig = {
 	input: "src/plugin.ts",
 	output: {
 		file: `${sdPlugin}/bin/plugin.js`,
@@ -46,4 +46,31 @@ const config = {
 	]
 };
 
-export default config;
+/**
+ * Browser-targeted bundle for the property inspector's action browser
+ * (src/pi/) - separate from pluginConfig above because it runs in the PI's
+ * browser context, not Node, and is loaded via a plain <script> tag rather
+ * than as the plugin's CodePath entry point. Exists so the PI can import
+ * src/actiondb/search.ts (the tested fuzzy-search ranking) directly instead
+ * of a hand-duplicated copy.
+ * @type {import('rollup').RollupOptions}
+ */
+const actionBrowserConfig = {
+	input: "src/pi/action-browser.ts",
+	output: {
+		file: `${sdPlugin}/ui/js/action-browser.js`,
+		format: "iife",
+		sourcemap: isWatching
+	},
+	plugins: [
+		typescript({
+			tsconfig: "src/pi/tsconfig.json",
+			mapRoot: isWatching ? "./" : undefined
+		}),
+		nodeResolve({ browser: true }),
+		commonjs(),
+		!isWatching && terser()
+	]
+};
+
+export default [pluginConfig, actionBrowserConfig];

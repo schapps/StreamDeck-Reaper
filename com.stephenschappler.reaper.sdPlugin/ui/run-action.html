@@ -65,6 +65,9 @@
     <sdpi-item label="Action ID">
         <sdpi-textfield setting="actionId" placeholder="e.g. 40044 or _SWS_ABOUT"></sdpi-textfield>
     </sdpi-item>
+    <sdpi-item label="">
+        <button id="browse-actions-btn" type="button">Browse Actions…</button>
+    </sdpi-item>
     <sdpi-item label="Action Name">
         <sdpi-textfield setting="actionName" placeholder="Optional label for the key"></sdpi-textfield>
     </sdpi-item>
@@ -82,8 +85,24 @@
         <sdpi-range setting="repeatIntervalMs" min="50" max="1000" step="10" default="100" showlabels></sdpi-range>
     </sdpi-item>
 
+    <div id="action-browser-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input id="action-search-input" type="text" placeholder="Search actions…" autocomplete="off" />
+                <button id="action-browser-close" type="button" class="modal-close">&times;</button>
+            </div>
+            <div id="action-results" class="action-results"></div>
+            <div class="modal-footer">
+                <label for="use-id-directly-input">Use this ID directly:</label>
+                <input id="use-id-directly-input" type="text" placeholder="Any action ID" />
+                <button id="use-id-directly-btn" type="button">Use</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/setup-panel.js"></script>
     <script src="js/run-action.js"></script>
+    <script src="js/action-browser.js"></script>
 </body>
 
 </html>
