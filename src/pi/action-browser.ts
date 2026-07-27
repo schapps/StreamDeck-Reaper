@@ -185,10 +185,28 @@ function main(): void {
 	}
 
 	async function selectAction(entry: ActionEntry): Promise<void> {
+		// setSettings() persists the change but does NOT refresh the bound
+		// sdpi-textfield's own displayed value - confirmed by trying it live,
+		// not assumed. Without this, the field silently shows the stale value
+		// until the PI is closed and reopened, which looks like the pick
+		// didn't work at all.
+		setFieldValue("action-id-field", entry.id);
+		setFieldValue("action-name-field", entry.name);
+
 		const current = await client.getSettings<ActionSettingsShape>();
 		await client.setSettings<ActionSettingsShape>({ ...current, actionId: entry.id, actionName: entry.name });
 		await pushRecent(entry.id);
 		closeModal();
+	}
+
+	function setFieldValue(elementId: string, value: string): void {
+		const el = document.getElementById(elementId) as (HTMLElement & { value?: string }) | null;
+		if (!el) return;
+		el.value = value;
+		// Not a real user interaction, so no native 'change' event fires on
+		// its own - dispatch one so other listeners on this field (e.g. the
+		// unrecognized-ID check in run-action.js) react too.
+		el.dispatchEvent(new Event("change", { bubbles: true }));
 	}
 
 	function getVisibleRows(): HTMLElement[] {
