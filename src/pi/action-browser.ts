@@ -77,6 +77,24 @@ function main(): void {
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 	let selectedIndex = -1;
 
+	// Passive settings cache, so selectAction() never has to call
+	// client.getSettings() itself. That matters: getSettings()'s response
+	// arrives on the SAME shared event bus (xt.didReceiveSettings, see the
+	// real sdpi-components bundle's Yt class) that every bound
+	// sdpi-textfield on the page is independently subscribed to - calling
+	// it re-broadcasts whatever settings snapshot comes back to every
+	// field, including the one we just tried to update, silently
+	// overwriting our fresh value with the stale one a moment later. That
+	// was the actual cause of the field not visibly updating, not a
+	// rendering bug - confirmed by reading the bundle, not guessed.
+	let latestSettings: ActionSettingsShape = {};
+	void client.getSettings<ActionSettingsShape>().then((s) => {
+		latestSettings = s;
+	});
+	client.didReceiveSettings.subscribe((msg) => {
+		latestSettings = msg.payload.settings as ActionSettingsShape;
+	});
+
 	function openModal(): void {
 		modal.classList.remove("hidden");
 		searchInput.value = "";
@@ -185,16 +203,16 @@ function main(): void {
 	}
 
 	async function selectAction(entry: ActionEntry): Promise<void> {
-		// setSettings() persists the change but does NOT refresh the bound
-		// sdpi-textfield's own displayed value - confirmed by trying it live,
-		// not assumed. Without this, the field silently shows the stale value
-		// until the PI is closed and reopened, which looks like the pick
-		// didn't work at all.
+		const merged: ActionSettingsShape = { ...latestSettings, actionId: entry.id, actionName: entry.name };
+		latestSettings = merged;
+		await client.setSettings<ActionSettingsShape>(merged);
+
+		// setSettings() alone doesn't reliably refresh the bound
+		// sdpi-textfield's own displayed value, so this is still needed even
+		// with the getSettings()-avoidance above - confirmed live, not assumed.
 		setFieldValue("action-id-field", entry.id);
 		setFieldValue("action-name-field", entry.name);
 
-		const current = await client.getSettings<ActionSettingsShape>();
-		await client.setSettings<ActionSettingsShape>({ ...current, actionId: entry.id, actionName: entry.name });
 		await pushRecent(entry.id);
 		closeModal();
 	}
@@ -283,6 +301,7 @@ interface StreamDeckClient {
 	setGlobalSettings<T>(settings: T): Promise<void>;
 	getSettings<T>(): Promise<T>;
 	setSettings<T>(settings: T): Promise<void>;
+	didReceiveSettings: { subscribe(handler: (msg: { payload: { settings: unknown } }) => void): void };
 }
 
 main();
