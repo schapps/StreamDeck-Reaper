@@ -75,5 +75,6 @@
 		"Version": "24",
 		"Debug": "enabled"
 	},
+	"URL": "https://github.com/schapps/StreamDeck-Reaper",
 	"UUID": "com.stephenschappler.reaper"
 }
