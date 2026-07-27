@@ -105,16 +105,46 @@ touched recently.
 
 ## Action database (Milestone 4)
 
-- `tools/ActionList.txt` — raw export dumped via an SWS action against a
-  real REAPER 7.77 instance (`Section\tId\tAction`, all sections). Commit
-  this alongside the generated JSON so a future REAPER version's DB is
-  reproducible: re-dump, rerun `npm run build:actions`.
-- `tools/build-action-db.ts` — filters to `Main` only (the web interface
-  can't address other sections, see findings doc) and applies
-  `tools/curated-tags.ts`. Every tag in that file was checked against a
-  real ID in the export before being added — none are guessed.
+- `tools/ActionList.txt` — raw export dumped via **SWS/S&M: Dump action
+  list (all actions)** (`_S&M_DUMP_ALL_ACTION_LIST`) against a real REAPER
+  7.77 instance (`Section\tId\tAction`, all sections) — REAPER's own
+  Actions window has no export command in this version, despite what spec
+  §7.2 assumes. Commit this alongside the generated JSON so a future
+  REAPER version's DB is reproducible: re-dump, rerun `npm run build:actions`.
+- `src/actiondb/parse-export.ts` — the shared parser for that export
+  format (filters to `Main` only — the web interface can't address other
+  sections, see findings doc). Used by both `tools/build-action-db.ts`
+  (build-time, applies `tools/curated-tags.ts`) and
+  `src/actiondb/import-store.ts` (runtime user import, no tags). One
+  parser, two callers — don't fork it.
 - `src/actiondb/search.ts` — the fuzzy-search ranking, unit-tested
   (`tests/actiondb/search.test.ts`) and imported directly by
   `src/pi/action-browser.ts`. Don't hand-duplicate this logic in plain JS
   for the PI; that's exactly what the separate browser rollup output
   exists to avoid.
+
+## Action import (Milestone 5)
+
+The user's imported action list is **not** in Stream Deck global
+settings — it's a JSON file on disk at
+`com.stephenschappler.reaper.sdPlugin/data/actions-imported.json`
+(`src/actiondb/import-store.ts`), gitignored, alongside the bundled
+`data/actions-native.json`. A full export runs to thousands of rows
+(~1.2MB as JSON); global settings round-trip over the local WebSocket on
+every read/write — including ones unrelated to the action list — so
+storing that much there would mean shipping ~1.2MB over IPC on unrelated
+setting changes. Spec §7.2 explicitly allows this fallback ("store the
+database in the plugin's own data directory on disk and keep only a path
+reference in settings"); the "reference" here is just "does the file
+exist," not even a settings field.
+
+`import-store.ts`'s functions take an optional `dataDir` param (default
+`path.join(process.cwd(), "data")`, confirmed empirically to resolve to
+the sdPlugin root when the plugin is actually running) so tests can point
+at a temp directory instead of writing into the real bundle.
+
+PI → plugin messages for this live in the same `streamDeck.ui.onSendToPlugin`
+dispatcher as `testConnection` (`src/plugin.ts`): `importActions` (payload
+carries the raw file text, read client-side via `FileReader` in
+`ui/js/import-actions.js`), `clearImportedActions`, and
+`getImportedActionsSummary`.

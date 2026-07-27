@@ -1,8 +1,12 @@
 import type { JsonObject } from "@elgato/utils";
-import type { ActionEntry } from "../actiondb/types.js";
 import type { ReaperClientOptions } from "./types.js";
 
-/** Shape of the plugin's global settings (spec section 10). */
+/**
+ * Shape of the plugin's global settings (spec section 10). The user's
+ * imported action list is NOT here - it lives on disk (see
+ * src/actiondb/import-store.ts) rather than round-tripping several
+ * thousand rows through Stream Deck settings on every read/write.
+ */
 export interface GlobalSettings extends JsonObject {
 	host?: string;
 	port?: number;
@@ -15,8 +19,6 @@ export interface GlobalSettings extends JsonObject {
 	recentActions?: string[];
 	/** Action IDs starred in the action browser. */
 	favorites?: string[];
-	/** User-imported action list, merged into the bundled native database at browse time (spec section 7.2). */
-	importedActions?: ActionEntry[];
 }
 
 export const GLOBAL_SETTINGS_DEFAULTS: Required<Pick<GlobalSettings, "host" | "port" | "timeoutMs">> = {

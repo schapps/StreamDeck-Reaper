@@ -3,6 +3,7 @@ dist/
 build/
 com.stephenschappler.reaper.sdPlugin/bin/
 com.stephenschappler.reaper.sdPlugin/ui/js/action-browser.js
+com.stephenschappler.reaper.sdPlugin/data/actions-imported.json
 *.log
 logs/
 .DS_Store

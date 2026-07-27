@@ -23,7 +23,7 @@ Marketplace.
 | 2. Skeleton, transport layer, Run Action key | ✅ Done |
 | 3. Transport & Track Control keys, state manager, polling | ✅ Done |
 | 4. Action database, fuzzy search, browser UI | ✅ Done |
-| 5. Action import (user's exported action list) | Not started |
+| 5. Action import (user's exported action list) | ✅ Done |
 | 6. Dials (Stream Deck+) | Not started |
 | 7. Polish (real icon art, error states, localization) | Not started |
 | 8. Release (Marketplace assets, submission) | Not started |
@@ -33,6 +33,9 @@ Marketplace.
 - **Run Action** — trigger any REAPER action by numeric or named command ID
   (`40044`, `_SWS_ABOUT`, ReaPack script IDs, …), with a searchable action
   browser (fuzzy search, favorites, recents) instead of hand-typing IDs.
+  Import your own action list (via the SWS action
+  `SWS/S&M: Dump action list (all actions)`) to make SWS and ReaPack
+  scripts searchable too.
 - **Transport** — play, stop, pause, record, repeat, go to start/end, with
   live lit/dim feedback driven by REAPER's actual transport state.
 - **Track Control** — mute, solo, record-arm, select, targeting a track by

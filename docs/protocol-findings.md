@@ -321,3 +321,31 @@ does *something* consistent with the hypothesis, not that it's the *specific*
 action the spec intended - name confirmation from an authoritative list
 catches mistakes behavioral testing alone can miss when two actions produce
 overlapping observable effects from the same starting state.
+
+---
+
+## Milestone 5 addendum: action-list export mechanism
+
+Spec §7.2 assumes REAPER's native **Actions → Show action list → Export**
+menu item. It doesn't exist in the user's REAPER 7.77 - the Actions window
+has no export command. The real, working mechanism is an SWS action:
+**`SWS/S&M: Dump action list (all actions)`** (command ID
+`_S&M_DUMP_ALL_ACTION_LIST`), which writes the same tab-delimited
+`Section\tId\tAction` format already verified in Milestone 4
+(`tools/ActionList.txt`). SWS ships four other dump variants (native-only,
+SWS-only, custom-only, all-but-custom) - "all actions" is what both the
+bundled native database and the runtime import feature are built against,
+since it's the only one that captures SWS and ReaPack/custom script IDs
+alongside the native ones.
+
+The plugin's own action-list import feature (§7.2's "Import my action
+list") points users at this SWS action directly rather than the
+nonexistent native export command.
+
+Also resolved from the Milestone 3 addendum: REAPER's native "toggle `<x>`
+for selected tracks" actions (`6` mute, `7` solo, `9` recarm) toggle each
+selected track **independently**, verified live with a mixed-state
+selection - not a uniform block toggle. The Track Control key's "selected"
+target mode (see the git history for `src/actions/track.ts`) computes
+uniform on/off state client-side from cached poll data instead of relying
+on those actions or the `SET/TRACK/.../-1` toggle form.

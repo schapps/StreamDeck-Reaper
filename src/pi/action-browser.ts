@@ -48,11 +48,16 @@ function main(): void {
 
 	async function loadActions(): Promise<ActionEntry[]> {
 		if (allActions) return allActions;
-		const [db, globalSettings] = await Promise.all([
+		const [db, importedDb] = await Promise.all([
 			fetch("../data/actions-native.json").then((r) => r.json() as Promise<ActionDatabase>),
-			client.getGlobalSettings<GlobalSettings>(),
+			// The imported list lives on disk (src/actiondb/import-store.ts), not in
+			// settings - it doesn't exist until the user imports something, so a
+			// missing file (404) just means "nothing imported yet," not an error.
+			fetch("../data/actions-imported.json")
+				.then((r) => (r.ok ? (r.json() as Promise<ActionDatabase>) : null))
+				.catch(() => null),
 		]);
-		const imported = (globalSettings.importedActions ?? []).map((a) => ({ ...a, imported: true }));
+		const imported = (importedDb?.actions ?? []).map((a) => ({ ...a, imported: true }));
 		allActions = [...db.actions, ...imported];
 		return allActions;
 	}
