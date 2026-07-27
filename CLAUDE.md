@@ -3,6 +3,75 @@
 REAPER Control — an Elgato Stream Deck plugin that drives REAPER over its
 built-in web interface. Full spec: `reaper-streamdeck-spec.md`.
 
+## Status and history
+
+Milestones 1–5 and 7 done. Milestone 6 (Dials) deliberately skipped - no
+Stream Deck+ hardware to test against, revisit if that changes. Milestone
+8 (Marketplace release) is in progress: the plugin itself is feature-complete
+and has been live-tested in a real Stream Deck app throughout; what's left
+is account/business steps only the user can do (make the GitHub repo
+public, register at maker.elgato.com, sign the Maker Agreement, test on
+Windows, capture real hardware screenshots/video, actually submit).
+
+What each milestone actually did, briefly (see the dedicated sections below
+for the load-bearing technical detail on 4/5/7):
+
+1. **Protocol verification.** Empirically verified every §3 claim against a
+   real, running REAPER 7.77 instance rather than trusting the spec's
+   admittedly-pessimistic guesses. Two upgrades over spec: named command IDs
+   (`_SWS_*`, `_RS*`) resolve and execute, and `GET/<command_id>` exposes
+   toggle state for *any* action, not just a fixed set. See
+   `docs/protocol-findings.md`.
+2. **Skeleton, `ReaperClient`, Run Action, setup panel.** Scaffolded via
+   `streamdeck create`. Built the batching/backoff HTTP client and the first
+   key type. Verified the PI's `window.SDPIComponents.streamDeckClient` API
+   by downloading and reading the actual sdpi-components bundle rather than
+   guessing at it - a pattern that recurs (and pays off) throughout this
+   project.
+3. **`StateManager`, Transport, Track Control.** Central polling manager,
+   two more key types with live REAPER-state feedback. Transport's action-ID
+   mapping was later corrected in Milestone 4 after a real action-list
+   export revealed two of the IDs were subtly wrong (matched by *behavior*
+   during live testing, but not the specific action the spec intended).
+4. **Action database, fuzzy search, browser UI.** Built entirely on a real
+   export the user obtained via an SWS action, after a scraped community
+   site turned out not to expose real command IDs.
+5. **Action list import.** User-imported actions live on disk, not in
+   Stream Deck settings (see the dedicated section below).
+6. **Dials.** Skipped (see above).
+7. **Polish.** Real icon art (own SVG→PNG pipeline via `@resvg/resvg-js`),
+   per-key disconnected-state badges, worked spec §11's error-state table
+   line by line (which caught a real gap: the setup panel never re-expanded
+   after a connection drop), a diagnostics-copy button, and localization
+   scaffolding - including discovering, by reading the actual bundle source,
+   that sdpi-components' own PI-side i18n mechanism is dead code in this
+   version.
+
+**Post-ship bug fixes**, both reported by the user after real hands-on
+testing: an unreadable-text contrast bug in the action browser modal
+(one-line CSS fix), and the Action ID field not visually updating after
+picking from the browser. The second one took three attempts - the first
+two fixes were individually reasonable but wrong, and the actual root cause
+(`client.getSettings()`'s response arrives on a shared broadcast bus that
+every bound `sdpi-textfield` on the page listens to, so requesting current
+settings before merging in a change re-broadcasts the *old* value back over
+the very field just updated) was only found by tracing the real component
+source end to end rather than patching symptoms. See the git log around
+"Fix the actual root cause" for the full account.
+
+**Marketplace prep**: verified the actual, current submission process
+against Elgato's live docs (maker.elgato.com, docs.elgato.com) rather than
+prior knowledge, added the manifest's `URL` field, and drafted listing copy
+at `docs/marketplace-listing.md`. Along the way, `@elgato/cli validate`
+caught that the repo's GitHub URL 404s - it's still private.
+
+**The throughline across all of this**: verify against the real, running
+system (REAPER, the sdpi-components bundle, Elgato's actual docs, the
+plugin's own live process/logs) before building on an assumption, spec
+claim, or vendor doc that could be stale or simply wrong. Nearly every
+substantive bug or wrong turn in this project's history traces back to a
+place that verification was skipped or arrived late.
+
 ## Source of truth for the web interface
 
 **`docs/protocol-findings.md`, not the spec's §3 assumptions.** The spec was
