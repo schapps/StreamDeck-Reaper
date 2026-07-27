@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+	<!-- Static fallback only - Track overrides this immediately via setImage()
+	     once poll data arrives (src/actions/track.ts). Matches the neutral
+	     "no target resolved yet" rendering of trackInactiveIcon(). -->
+	<rect width="72" height="72" fill="#1e1e1e" />
+	<rect x="10" y="10" width="52" height="52" rx="10" fill="none" stroke="#666666" stroke-width="4" opacity="0.5" />
+</svg>

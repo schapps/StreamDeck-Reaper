@@ -58,6 +58,10 @@
                 <button id="show-setup-btn" type="button" class="link-button">Connection settings</button>
             </sdpi-item>
         </div>
+
+        <sdpi-item label="">
+            <button id="copy-diagnostics-btn" type="button" class="link-button">Copy diagnostics</button>
+        </sdpi-item>
     </div>
 
     <hr />
@@ -70,7 +74,10 @@
         </sdpi-select>
     </sdpi-item>
     <sdpi-item label="Track Number" id="track-number-item">
-        <sdpi-textfield setting="trackNumber" type="number" value-type="number" placeholder="1"></sdpi-textfield>
+        <sdpi-textfield id="track-number-field" setting="trackNumber" type="number" value-type="number" placeholder="1"></sdpi-textfield>
+    </sdpi-item>
+    <sdpi-item label="" id="track-number-warning" class="hidden">
+        <p class="hint hint-warning">This track number is higher than your project's track count.</p>
     </sdpi-item>
     <sdpi-item label="Function">
         <sdpi-select setting="function" default="mute">

@@ -85,3 +85,31 @@ export function trackInactiveIcon(): string {
 		`<rect x="10" y="10" width="52" height="52" rx="10" fill="none" stroke="#666" stroke-width="4" opacity="0.5"/>`,
 	);
 }
+
+const RUN_ACTION_COLOR = "#1C9E8E";
+
+/** Matches design/icons/key-run-action.svg's mark - see tools/render-icons.ts for the static PNG fallback this mirrors. */
+export function runActionIcon(configured: boolean): string {
+	if (!configured) {
+		// "Not configured" (spec section 11) - hollow ring only, dim, no center dot.
+		return svg(`<circle cx="36" cy="36" r="18" fill="none" stroke="#666" stroke-width="5" opacity="0.5"/>`);
+	}
+	return svg(
+		`<circle cx="36" cy="36" r="18" fill="none" stroke="${RUN_ACTION_COLOR}" stroke-width="5"/><circle cx="36" cy="36" r="6" fill="${RUN_ACTION_COLOR}"/>`,
+	);
+}
+
+/**
+ * Overlays a small corner badge on an already-rendered icon (spec section 9:
+ * "a small badge in the corner, not a full icon replacement, so the key
+ * remains recognizable"). Takes the icon as a finished SVG string and
+ * splices the badge in just before the closing tag, rather than threading
+ * a "disconnected" flag through every icon function.
+ */
+export function withDisconnectedBadge(iconSvg: string): string {
+	const badge =
+		'<circle cx="58" cy="58" r="12" fill="#E0A030"/>' +
+		'<rect x="56.4" y="50.5" width="3.2" height="10" rx="1.6" fill="#1e1e1e"/>' +
+		'<rect x="56.4" y="63" width="3.2" height="3.2" rx="1.6" fill="#1e1e1e"/>';
+	return iconSvg.replace("</svg>", `${badge}</svg>`);
+}

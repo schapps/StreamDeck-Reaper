@@ -5,6 +5,7 @@ import { Track } from "./actions/track.js";
 import { Transport } from "./actions/transport.js";
 import { clearImportedActions, importActionList, importedActionsSummary } from "./actiondb/import-store.js";
 import { connectionManager } from "./reaper/connection-manager.js";
+import { readLastLogLines } from "./util/diagnostics.js";
 
 streamDeck.logger.setLevel("info");
 
@@ -41,7 +42,39 @@ streamDeck.ui.onSendToPlugin(async (ev) => {
 			});
 			break;
 		}
+		case "getDiagnosticLog": {
+			await streamDeck.ui.sendToPropertyInspector({
+				event: "diagnosticLogResult",
+				lines: readLastLogLines(20),
+			});
+			break;
+		}
+		case "getConnectionStatus": {
+			await streamDeck.ui.sendToPropertyInspector({
+				event: "connectionStatusChanged",
+				status: connectionManager.current.status,
+			});
+			break;
+		}
+		case "getTrackCount": {
+			try {
+				const state = await connectionManager.current.query([{ type: "NTRACK" }]);
+				await streamDeck.ui.sendToPropertyInspector({ event: "trackCountResult", ntrack: state.ntrack ?? null });
+			} catch {
+				await streamDeck.ui.sendToPropertyInspector({ event: "trackCountResult", ntrack: null });
+			}
+			break;
+		}
 	}
+});
+
+// Pushes to whichever PI is currently open (spec sections 4 and 11): "on
+// successful connection, the setup panel collapses... and stays collapsed
+// unless the connection is lost." The panel's own default collapsed/expanded
+// state is otherwise driven by the sticky `hasConnectedOnce` global setting,
+// which alone can't represent "was connected, then dropped."
+connectionManager.onStatusChange((status) => {
+	void streamDeck.ui.sendToPropertyInspector({ event: "connectionStatusChanged", status });
 });
 
 streamDeck.actions.registerAction(new RunAction());

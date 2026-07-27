@@ -58,12 +58,19 @@
                 <button id="show-setup-btn" type="button" class="link-button">Connection settings</button>
             </sdpi-item>
         </div>
+
+        <sdpi-item label="">
+            <button id="copy-diagnostics-btn" type="button" class="link-button">Copy diagnostics</button>
+        </sdpi-item>
     </div>
 
     <hr />
 
     <sdpi-item label="Action ID">
-        <sdpi-textfield setting="actionId" placeholder="e.g. 40044 or _SWS_ABOUT"></sdpi-textfield>
+        <sdpi-textfield id="action-id-field" setting="actionId" placeholder="e.g. 40044 or _SWS_ABOUT"></sdpi-textfield>
+    </sdpi-item>
+    <sdpi-item label="" id="action-id-hint-item" class="hidden">
+        <p id="action-id-hint" class="hint"></p>
     </sdpi-item>
     <sdpi-item label="">
         <button id="browse-actions-btn" type="button">Browse Actions…</button>
@@ -123,9 +130,9 @@
     </div>
 
     <script src="js/setup-panel.js"></script>
+    <script src="js/action-browser.js"></script>
     <script src="js/run-action.js"></script>
     <script src="js/import-actions.js"></script>
-    <script src="js/action-browser.js"></script>
 </body>
 
 </html>

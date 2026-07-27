@@ -27,6 +27,38 @@ function requireEl<T extends Element>(id: string): T {
 	return el as unknown as T;
 }
 
+let allActions: ActionEntry[] | null = null;
+
+/**
+ * Loads and caches the combined native + imported action database. Defined
+ * at module scope (not inside main()'s early-return guard) and exposed on
+ * window so other PI scripts - currently ui/js/run-action.js, for the
+ * "this ID isn't in your action list" warning (spec section 11) - can reuse
+ * the same loaded data instead of re-fetching and re-merging it themselves.
+ */
+async function loadActions(): Promise<ActionEntry[]> {
+	if (allActions) return allActions;
+	const [db, importedDb] = await Promise.all([
+		fetch("../data/actions-native.json").then((r) => r.json() as Promise<ActionDatabase>),
+		// The imported list lives on disk (src/actiondb/import-store.ts), not in
+		// settings - it doesn't exist until the user imports something, so a
+		// missing file (404) just means "nothing imported yet," not an error.
+		fetch("../data/actions-imported.json")
+			.then((r) => (r.ok ? (r.json() as Promise<ActionDatabase>) : null))
+			.catch(() => null),
+	]);
+	const imported = (importedDb?.actions ?? []).map((a) => ({ ...a, imported: true }));
+	allActions = [...db.actions, ...imported];
+	return allActions;
+}
+
+async function actionExists(id: string): Promise<boolean> {
+	const actions = await loadActions();
+	return actions.some((a) => a.id === id);
+}
+
+(window as unknown as { ReaperActionDB: unknown }).ReaperActionDB = { loadActions, actionExists };
+
 function main(): void {
 	// Only run on pages that actually have the action browser markup (run-action.html).
 	if (!document.getElementById("action-browser-modal")) return;
@@ -42,25 +74,8 @@ function main(): void {
 	const useIdInput = requireEl<HTMLInputElement>("use-id-directly-input");
 	const useIdBtn = requireEl<HTMLButtonElement>("use-id-directly-btn");
 
-	let allActions: ActionEntry[] | null = null;
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 	let selectedIndex = -1;
-
-	async function loadActions(): Promise<ActionEntry[]> {
-		if (allActions) return allActions;
-		const [db, importedDb] = await Promise.all([
-			fetch("../data/actions-native.json").then((r) => r.json() as Promise<ActionDatabase>),
-			// The imported list lives on disk (src/actiondb/import-store.ts), not in
-			// settings - it doesn't exist until the user imports something, so a
-			// missing file (404) just means "nothing imported yet," not an error.
-			fetch("../data/actions-imported.json")
-				.then((r) => (r.ok ? (r.json() as Promise<ActionDatabase>) : null))
-				.catch(() => null),
-		]);
-		const imported = (importedDb?.actions ?? []).map((a) => ({ ...a, imported: true }));
-		allActions = [...db.actions, ...imported];
-		return allActions;
-	}
 
 	function openModal(): void {
 		modal.classList.remove("hidden");

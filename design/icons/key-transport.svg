@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+	<!-- Static fallback only - Transport overrides this immediately via setImage()
+	     once poll data arrives (src/actions/transport.ts). Matches the dim/off
+	     rendering of transportIcon() so there's no visible flash on first paint. -->
+	<rect width="72" height="72" fill="#1e1e1e" />
+	<polygon points="26,18 26,54 54,36" fill="#4CAF50" opacity="0.35" />
+</svg>

@@ -5,11 +5,13 @@
         "test": "vitest run",
         "test:watch": "vitest",
         "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tests/tsconfig.json && tsc --noEmit -p src/pi/tsconfig.json",
-        "build:actions": "tsx tools/build-action-db.ts"
+        "build:actions": "tsx tools/build-action-db.ts",
+        "build:icons": "tsx tools/render-icons.ts"
     },
     "type": "module",
     "devDependencies": {
         "@elgato/cli": "^1.7.4",
+        "@resvg/resvg-js": "^2.6.2",
         "@rollup/plugin-commonjs": "^29.0.2",
         "@rollup/plugin-node-resolve": "^15.2.2",
         "@rollup/plugin-terser": "^1.0.0",

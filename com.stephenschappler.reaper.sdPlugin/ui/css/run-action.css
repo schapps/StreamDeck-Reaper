@@ -21,6 +21,11 @@
 	margin: 0;
 }
 
+.hint-warning {
+	color: #e0a030;
+	opacity: 1;
+}
+
 #test-connection-result {
 	font-size: 12px;
 }

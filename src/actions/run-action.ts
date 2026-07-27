@@ -1,5 +1,6 @@
 import streamDeck, {
 	action,
+	DidReceiveSettingsEvent,
 	KeyDownEvent,
 	KeyUpEvent,
 	SingletonAction,
@@ -7,6 +8,7 @@ import streamDeck, {
 	WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { connectionManager } from "../reaper/connection-manager.js";
+import { runActionIcon, withDisconnectedBadge } from "../util/icons.js";
 import type { JsonObject } from "@elgato/utils";
 
 /** Milestone 2 scope: manual ID entry only - no action browser/import yet. */
@@ -19,21 +21,38 @@ export interface RunActionSettings extends JsonObject {
 	repeatIntervalMs?: number;
 }
 
+type RunActionKeyAction = WillAppearEvent<RunActionSettings>["action"];
+
+interface Instance {
+	action: RunActionKeyAction;
+	configured: boolean;
+}
+
 const REPEAT_INITIAL_DELAY_MS = 400;
 const REPEAT_HARD_STOP_COUNT = 100;
 
 @action({ UUID: "com.stephenschappler.reaper.runaction" })
 export class RunAction extends SingletonAction<RunActionSettings> {
+	private instances = new Map<string, Instance>();
 	private repeatTimers = new Map<string, ReturnType<typeof setTimeout>>();
 	private repeatCounts = new Map<string, number>();
+	private disconnected = connectionManager.current.status === "disconnected";
+	private statusHandlerRegistered = false;
 
 	override onWillAppear(ev: WillAppearEvent<RunActionSettings>): void | Promise<void> {
-		const title = ev.payload.settings.actionName || ev.payload.settings.actionId;
-		if (title) return ev.action.setTitle(title);
+		this.ensureStatusHandler();
+		this.instances.set(ev.action.id, { action: ev.action, configured: !!ev.payload.settings.actionId });
+		this.render(ev.action, ev.payload.settings);
 	}
 
 	override onWillDisappear(ev: WillDisappearEvent<RunActionSettings>): void {
 		this.stopRepeating(ev.action.id);
+		this.instances.delete(ev.action.id);
+	}
+
+	/** Settings can change while the key stays visible (e.g. picked from the action browser, or edited in the PI) - not just on the next willAppear. */
+	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<RunActionSettings>): void {
+		this.render(ev.action, ev.payload.settings);
 	}
 
 	override async onKeyDown(ev: KeyDownEvent<RunActionSettings>): Promise<void> {
@@ -59,6 +78,30 @@ export class RunAction extends SingletonAction<RunActionSettings> {
 
 	override onKeyUp(ev: KeyUpEvent<RunActionSettings>): void {
 		this.stopRepeating(ev.action.id);
+	}
+
+	private ensureStatusHandler(): void {
+		if (this.statusHandlerRegistered) return;
+		this.statusHandlerRegistered = true;
+		connectionManager.onStatusChange((status) => {
+			this.disconnected = status === "disconnected";
+			for (const inst of this.instances.values()) {
+				void inst.action.setImage(this.iconFor(inst.configured));
+			}
+		});
+	}
+
+	private render(keyAction: RunActionKeyAction, settings: RunActionSettings): void {
+		const configured = !!settings.actionId;
+		const inst = this.instances.get(keyAction.id);
+		if (inst) inst.configured = configured;
+		void keyAction.setImage(this.iconFor(configured));
+		void keyAction.setTitle(settings.actionName || settings.actionId || "");
+	}
+
+	private iconFor(configured: boolean): string {
+		const icon = runActionIcon(configured);
+		return this.disconnected ? withDisconnectedBadge(icon) : icon;
 	}
 
 	private async fire(action: KeyDownEvent<RunActionSettings>["action"], actionId: string): Promise<void> {

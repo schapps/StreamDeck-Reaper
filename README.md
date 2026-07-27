@@ -24,8 +24,8 @@ Marketplace.
 | 3. Transport & Track Control keys, state manager, polling | ✅ Done |
 | 4. Action database, fuzzy search, browser UI | ✅ Done |
 | 5. Action import (user's exported action list) | ✅ Done |
-| 6. Dials (Stream Deck+) | Not started |
-| 7. Polish (real icon art, error states, localization) | Not started |
+| 6. Dials (Stream Deck+) | Skipped for now (no Stream Deck+ to test against) |
+| 7. Polish (icon art, error states, diagnostics, localization scaffolding) | ✅ Done |
 | 8. Release (Marketplace assets, submission) | Not started |
 
 ## What works today
@@ -41,7 +41,14 @@ Marketplace.
 - **Track Control** — mute, solo, record-arm, select, targeting a track by
   number, the current selection, or master, with live two-state feedback.
 - A setup panel that walks through enabling REAPER's web interface, plus a
-  **Test Connection** button with specific, actionable diagnostics.
+  **Test Connection** button with specific, actionable diagnostics. It
+  re-expands automatically if a previously-working connection drops, and
+  every key shows a small disconnected badge without losing its normal
+  icon.
+- A **Copy diagnostics** button (plugin/OS/Stream Deck versions, redacted
+  connection settings, last 20 log lines) for support requests, and inline
+  PI warnings for an unrecognized action ID or an out-of-range track
+  number.
 
 ## Requirements
 
@@ -71,6 +78,7 @@ npm test           # vitest
 npm run typecheck   # tsc --noEmit across the Node, test, and PI (browser) projects
 npm run build        # rollup -> com.stephenschappler.reaper.sdPlugin/{bin,ui/js}
 npm run build:actions # regenerate data/actions-native.json from tools/ActionList.txt
+npm run build:icons   # rasterize design/icons/*.svg -> the PNGs the manifest requires
 ```
 
 To try it locally in a running Stream Deck app:

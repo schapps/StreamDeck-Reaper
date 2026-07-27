@@ -1,0 +1,58 @@
+{
+	"Name": "REAPER Control",
+	"Description": "Execute REAPER actions directly from Stream Deck over REAPER's built-in web interface.",
+	"com.stephenschappler.reaper.runaction": {
+		"Name": "Run Action",
+		"Tooltip": "Runs a REAPER action (numeric or named command ID) directly, without a hotkey."
+	},
+	"com.stephenschappler.reaper.transport": {
+		"Name": "Transport",
+		"Tooltip": "Play, stop, pause, record, repeat, or seek - with live state feedback from REAPER."
+	},
+	"com.stephenschappler.reaper.track": {
+		"Name": "Track Control",
+		"Tooltip": "Mute, solo, record-arm, or select a track - with live state feedback from REAPER."
+	},
+	"Localization": {
+		"setup.title": "Connect to REAPER",
+		"setup.step1": "In REAPER, open Options → Preferences → Control/OSC/web",
+		"setup.step2": "Click Add, then choose Web browser interface",
+		"setup.step3": "Set the port to 8080 (or any port - just match it below)",
+		"setup.step4": "Tick Run on startup, then click OK",
+		"setup.step5": "Click Test Connection below",
+		"setup.reaperMustBeRunning": "REAPER must be running for Stream Deck keys to work.",
+		"setup.host": "Host",
+		"setup.port": "Port",
+		"setup.username": "Username",
+		"setup.password": "Password",
+		"setup.timeout": "Timeout (ms)",
+		"setup.credentialsHint": "REAPER's web interface sends credentials unencrypted. Only use this over a network you trust.",
+		"setup.testConnection": "Test Connection",
+		"setup.connected": "Connected to REAPER",
+		"setup.connectionSettings": "Connection settings",
+		"setup.copyDiagnostics": "Copy diagnostics",
+		"runaction.actionId": "Action ID",
+		"runaction.actionIdPlaceholder": "e.g. 40044 or _SWS_ABOUT",
+		"runaction.browseActions": "Browse Actions…",
+		"runaction.actionName": "Action Name",
+		"runaction.actionNamePlaceholder": "Optional label for the key",
+		"runaction.section": "Section",
+		"runaction.repeatOnHold": "Repeat on Hold",
+		"runaction.repeatInterval": "Repeat Interval (ms)",
+		"runaction.unrecognizedId": "This ID isn't in your action list. It may still work - import your action list to confirm.",
+		"runaction.importTitle": "Import your action list",
+		"runaction.importStep1": "In REAPER, open the Actions window",
+		"runaction.importStep2": "Find and run SWS/S&M: Dump action list (all actions)",
+		"runaction.importStep3": "Click Import my action list below and select the saved file",
+		"runaction.importScopeHint": "Only Main-section actions are imported - other sections can't be triggered over REAPER's web interface.",
+		"runaction.importButton": "Import my action list",
+		"runaction.noActionsImported": "No actions imported.",
+		"runaction.clearImported": "Clear imported actions",
+		"transport.function": "Function",
+		"transport.blinkRecord": "Blink Record",
+		"track.trackTarget": "Track",
+		"track.trackNumber": "Track Number",
+		"track.function": "Function",
+		"track.showTrackName": "Show Track Name"
+	}
+}

@@ -9,7 +9,7 @@ import type { JsonObject } from "@elgato/utils";
 import { connectionManager } from "../reaper/connection-manager.js";
 import { TrackFlag, type TrackState } from "../reaper/types.js";
 import { stateManager } from "../state.js";
-import { trackIcon, trackInactiveIcon, type TrackFunction } from "../util/icons.js";
+import { trackIcon, trackInactiveIcon, withDisconnectedBadge, type TrackFunction } from "../util/icons.js";
 
 export interface TrackSettings extends JsonObject {
 	trackTarget?: "number" | "selected" | "master";
@@ -20,6 +20,14 @@ export interface TrackSettings extends JsonObject {
 }
 
 type TrackKeyAction = WillAppearEvent<TrackSettings>["action"];
+
+interface Instance {
+	action: TrackKeyAction;
+	/** undefined = no target resolved yet / out of range / nothing selected. */
+	lit: boolean | undefined;
+	fn: TrackFunction;
+	targets: TrackState[];
+}
 
 const FUNCTION_SET_TOKEN: Record<TrackFunction, string> = {
 	recarm: "RECARM",
@@ -39,26 +47,32 @@ const MAX_TITLE_LENGTH = 20;
 
 @action({ UUID: "com.stephenschappler.reaper.track" })
 export class Track extends SingletonAction<TrackSettings> {
-	/** Last resolved target tracks per key instance, used on keyDown - the state manager only pushes updates on poll, not on demand. */
-	private lastTracks = new Map<string, TrackState[]>();
-	private lastLit = new Map<string, boolean | undefined>();
+	private instances = new Map<string, Instance>();
+	private disconnected = connectionManager.current.status === "disconnected";
+	private statusHandlerRegistered = false;
 
 	override onWillAppear(ev: WillAppearEvent<TrackSettings>): void | Promise<void> {
 		const settings = ev.payload.settings;
-		void ev.action.setImage(trackInactiveIcon());
+		this.ensureStatusHandler();
+		this.instances.set(ev.action.id, {
+			action: ev.action,
+			lit: undefined,
+			fn: settings.function ?? "mute",
+			targets: [],
+		});
+		this.paint(ev.action.id);
 		stateManager.subscribe(ev.action.id, "track", (state) => {
-			if (state.tracks) this.render(ev.action, settings, state.tracks);
+			if (state.tracks) this.onState(ev.action.id, settings, state.tracks);
 		});
 	}
 
 	override onWillDisappear(ev: WillDisappearEvent<TrackSettings>): void {
 		stateManager.unsubscribe(ev.action.id);
-		this.lastTracks.delete(ev.action.id);
-		this.lastLit.delete(ev.action.id);
+		this.instances.delete(ev.action.id);
 	}
 
 	override async onKeyDown(ev: KeyDownEvent<TrackSettings>): Promise<void> {
-		const targets = this.lastTracks.get(ev.action.id) ?? [];
+		const targets = this.instances.get(ev.action.id)?.targets ?? [];
 		if (targets.length === 0) {
 			// Out of range, or "selected" with nothing selected - do nothing, per spec's edge-case handling.
 			await ev.action.showAlert();
@@ -94,25 +108,37 @@ export class Track extends SingletonAction<TrackSettings> {
 		}
 	}
 
-	private render(keyAction: TrackKeyAction, settings: TrackSettings, tracks: TrackState[]): void {
+	private ensureStatusHandler(): void {
+		if (this.statusHandlerRegistered) return;
+		this.statusHandlerRegistered = true;
+		connectionManager.onStatusChange((status) => {
+			this.disconnected = status === "disconnected";
+			for (const id of this.instances.keys()) this.paint(id);
+		});
+	}
+
+	private onState(id: string, settings: TrackSettings, tracks: TrackState[]): void {
+		const inst = this.instances.get(id);
+		if (!inst) return;
+
 		const targets = resolveTracks(tracks, settings);
-		this.lastTracks.set(keyAction.id, targets);
+		inst.targets = targets;
+		inst.fn = settings.function ?? "mute";
 
 		if (targets.length === 0) {
-			if (this.lastLit.get(keyAction.id) !== undefined) {
-				this.lastLit.set(keyAction.id, undefined);
-				void keyAction.setImage(trackInactiveIcon());
-				if (settings.showTrackName ?? true) void keyAction.setTitle("");
+			if (inst.lit !== undefined) {
+				inst.lit = undefined;
+				this.paint(id);
+				if (settings.showTrackName ?? true) void inst.action.setTitle("");
 			}
 			return;
 		}
 
-		const fn = settings.function ?? "mute";
-		const flag = FLAG_FOR_FUNCTION[fn];
+		const flag = FLAG_FOR_FUNCTION[inst.fn];
 		const lit = targets.every((t) => (t.flags & flag) !== 0);
-		if (this.lastLit.get(keyAction.id) !== lit) {
-			this.lastLit.set(keyAction.id, lit);
-			void keyAction.setImage(trackIcon(fn, lit));
+		if (inst.lit !== lit) {
+			inst.lit = lit;
+			this.paint(id);
 		}
 
 		if (settings.showTrackName ?? true) {
@@ -120,8 +146,16 @@ export class Track extends SingletonAction<TrackSettings> {
 				targets.length > 1
 					? `${targets.length} Tracks`
 					: truncateTitle(targets[0]?.name || `Track ${targets[0]?.index}`);
-			void keyAction.setTitle(title);
+			void inst.action.setTitle(title);
 		}
+	}
+
+	/** Repaints from current instance state - the only place setImage() is called. */
+	private paint(id: string): void {
+		const inst = this.instances.get(id);
+		if (!inst) return;
+		const icon = inst.lit === undefined ? trackInactiveIcon() : trackIcon(inst.fn, inst.lit);
+		void inst.action.setImage(this.disconnected ? withDisconnectedBadge(icon) : icon);
 	}
 }
 

@@ -148,3 +148,43 @@ dispatcher as `testConnection` (`src/plugin.ts`): `importActions` (payload
 carries the raw file text, read client-side via `FileReader` in
 `ui/js/import-actions.js`), `clearImportedActions`, and
 `getImportedActionsSummary`.
+
+## Icons and error states (Milestone 7)
+
+- `design/icons/*.svg` — hand-authored sources (original artwork, not
+  REAPER's own branding - this is an unaffiliated third-party plugin).
+  `tools/render-icons.ts` (`npm run build:icons`, via `@resvg/resvg-js`,
+  no native toolchain needed) rasterizes them into every PNG size the
+  manifest schema requires. Dimensions and the "category/list icons must
+  be monochrome white-on-transparent, marketplace icon is full color"
+  requirement were confirmed against
+  `https://schemas.elgato.com/streamdeck/plugins/manifest.json`, not
+  assumed from the spec's `72×72`/`144×144` key-art note alone.
+- All three key types now track connection status
+  (`connectionManager.onStatusChange`) per-instance and composite a small
+  corner badge via `withDisconnectedBadge()` (`src/util/icons.ts`) onto
+  whatever they're already rendering, rather than swapping to a different
+  icon — spec section 9's explicit requirement ("badge in the corner, not
+  a full icon replacement"). Each action keeps a `Map<id, Instance>` of
+  its visible keys now (not just `Map<id, boolean>` of last-rendered
+  state) specifically so a connection-status change can repaint every
+  visible key without needing fresh poll data.
+- The setup panel auto-re-expands on disconnect, not just via the sticky
+  `hasConnectedOnce` setting (spec sections 4 and 11: "stays collapsed
+  unless the connection is lost"). The backend pushes
+  `connectionStatusChanged` to whichever PI is open
+  (`connectionManager.onStatusChange` in `src/plugin.ts`); `setup-panel.js`
+  combines that with `hasConnectedOnce` to decide collapsed/expanded.
+- **`window.SDPIComponents.i18n.getMessage()` doesn't work in the
+  sdpi-components v4.0.1 bundle** - verified by reading the actual bundle
+  source: it reads a `.locales` property that is never assigned anywhere
+  in the file, so every call returns `""`. Don't wire PI strings through
+  it; build a plain `fetch("../en.json")` + DOM-swap approach instead if
+  PI localization is ever actually needed (i.e. a second locale gets
+  translated - there's no user-facing benefit to building this before
+  then). `com.stephenschappler.reaper.sdPlugin/en.json` exists and is
+  real/working for the **manifest-level** strings (plugin Name/Description,
+  per-action Name/Tooltip, keyed by UUID) and for the **backend's** own
+  `streamDeck.i18n` (a different, working implementation, via
+  `fileSystemLocaleProvider` reading `en.json`'s `"Localization"` object)
+  - just not for anything in `ui/js/*.js`.

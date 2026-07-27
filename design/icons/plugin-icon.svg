@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+	<!-- Marketplace/preferences icon - full color, brand teal -->
+	<rect x="1" y="1" width="22" height="22" rx="5" fill="#1C9E8E" />
+	<circle cx="12" cy="12" r="8" fill="none" stroke="#FFFFFF" stroke-width="2.5" />
+	<circle cx="12" cy="12" r="2.75" fill="#FFFFFF" />
+</svg>
