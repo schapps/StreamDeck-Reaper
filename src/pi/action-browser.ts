@@ -199,13 +199,27 @@ function main(): void {
 		closeModal();
 	}
 
+	/**
+	 * sdpi-textfield renders `<input @input="${t => this.value = t.target.value}">`
+	 * inside an open shadow root (confirmed against the real sdpi-components
+	 * v4.0.1 bundle source) - that's the ONLY path that updates the
+	 * component's own displayed value. Setting the outer custom element's
+	 * `.value` property directly does not reliably reach it. So: find the
+	 * real inner <input>, set ITS value, and dispatch a genuine 'input'
+	 * event on it - the exact same path actual typing takes, not a
+	 * best-effort imitation of it.
+	 */
 	function setFieldValue(elementId: string, value: string): void {
 		const el = document.getElementById(elementId) as (HTMLElement & { value?: string }) | null;
 		if (!el) return;
-		el.value = value;
-		// Not a real user interaction, so no native 'change' event fires on
-		// its own - dispatch one so other listeners on this field (e.g. the
-		// unrecognized-ID check in run-action.js) react too.
+		const innerInput = el.shadowRoot?.querySelector("input");
+		if (innerInput) {
+			innerInput.value = value;
+			innerInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+		} else {
+			// Fallback for an unexpected shadow DOM shape - better than nothing.
+			el.value = value;
+		}
 		el.dispatchEvent(new Event("change", { bubbles: true }));
 	}
 
