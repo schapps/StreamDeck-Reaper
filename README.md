@@ -67,6 +67,9 @@ Marketplace.
   assumptions where the two disagree.
 - [`CLAUDE.md`](CLAUDE.md) — conventions and gotchas for working on this
   codebase.
+- [`docs/marketplace-listing.md`](docs/marketplace-listing.md) — draft
+  copy for the Elgato Marketplace submission (tagline, description,
+  privacy statement, release notes).
 
 ## Development
 
