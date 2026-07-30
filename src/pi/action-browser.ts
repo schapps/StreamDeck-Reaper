@@ -169,6 +169,7 @@ function main(): void {
 		const name = document.createElement("span");
 		name.className = "action-name";
 		name.textContent = entry.name;
+		name.title = entry.name;
 
 		const id = document.createElement("span");
 		id.className = "action-id";
