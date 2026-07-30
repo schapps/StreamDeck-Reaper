@@ -16,7 +16,7 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseActionListExport } from "../src/actiondb/parse-export.js";
 import type { ActionDatabase } from "../src/actiondb/types.js";
 import { CURATED_TAGS } from "./curated-tags.js";
@@ -48,4 +48,4 @@ function main(): void {
 	console.log(`Wrote ${actions.length} Main-section actions (${tagged} tagged) to ${OUTPUT_PATH}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+if (import.meta.url === pathToFileURL(process.argv[1]).href) main();

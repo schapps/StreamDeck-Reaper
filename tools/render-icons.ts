@@ -15,7 +15,7 @@
 import { Resvg } from "@resvg/resvg-js";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(__dirname, "..", "design", "icons");
@@ -66,7 +66,7 @@ function main(): void {
 	}
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
 	if (!existsSync(SRC)) throw new Error(`Missing SVG source directory: ${SRC}`);
 	main();
 }
