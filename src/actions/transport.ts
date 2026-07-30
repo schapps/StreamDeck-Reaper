@@ -33,6 +33,7 @@ const FUNCTION_ACTION_ID: Record<TransportFunction, string> = {
 	pause: "1008", // Transport: Pause (not 40073, which is Play/Pause - a toggle, not a dedicated pause)
 	record: "1013", // Transport: Record (not 40046, which is edit-cursor-specific start/stop)
 	playStop: "40044", // Transport: Play/stop
+	playPause: "40073", // Transport: Play/pause - toggle, deliberately distinct from the dedicated "pause" above
 	repeat: "1068", // Transport: Toggle repeat
 	gotoStart: "40042",
 	gotoEnd: "40043",
@@ -113,6 +114,7 @@ export class Transport extends SingletonAction<TransportSettings> {
 		switch (fn) {
 			case "play":
 			case "playStop":
+			case "playPause":
 				return transport.playState === 1;
 			case "pause":
 				return transport.playState === 2;

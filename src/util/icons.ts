@@ -19,11 +19,21 @@ function opacityFor(lit: boolean): number {
 	return lit ? 1 : OFF_OPACITY;
 }
 
-export type TransportFunction = "play" | "stop" | "pause" | "record" | "playStop" | "repeat" | "gotoStart" | "gotoEnd";
+export type TransportFunction =
+	| "play"
+	| "stop"
+	| "pause"
+	| "record"
+	| "playStop"
+	| "playPause"
+	| "repeat"
+	| "gotoStart"
+	| "gotoEnd";
 
 const TRANSPORT_COLOR: Record<TransportFunction, string> = {
 	play: "#4CAF50",
 	playStop: "#4CAF50",
+	playPause: "#4CAF50",
 	pause: "#4CAF50",
 	repeat: "#4CAF50",
 	stop: "#9CA4A4",
@@ -40,6 +50,7 @@ export function transportIcon(fn: TransportFunction, lit: boolean): string {
 	switch (fn) {
 		case "play":
 		case "playStop":
+		case "playPause":
 			return svg(`<polygon points="26,18 26,54 54,36" fill="${color}" opacity="${opacity}"/>`);
 		case "pause":
 			return svg(
