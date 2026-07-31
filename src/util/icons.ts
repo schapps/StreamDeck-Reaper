@@ -89,9 +89,9 @@ export function transportIcon(fn: TransportFunction, lit: boolean): string {
 	}
 }
 
-export type TrackFunction = "recarm" | "mute" | "solo" | "select";
+export type TrackFunction = "recarm" | "mute" | "solo" | "select" | "displayName";
 
-const TRACK_COLOR: Record<TrackFunction, string> = {
+const TRACK_COLOR: Record<Exclude<TrackFunction, "displayName">, string> = {
 	recarm: "#E04040",
 	// Mute/solo are letter glyphs, not colored squares - white at full opacity
 	// for active, dimmed (via opacityFor) to a grey-ish white for inactive.
@@ -112,6 +112,10 @@ function soloGlyph(color: string, opacity: number): string {
 
 /** `bgColor`, when given, replaces the key's default background (the "tint track color" option) - the function glyph/square is unaffected, it's drawn on top either way. */
 export function trackIcon(fn: TrackFunction, lit: boolean, bgColor?: string): string {
+	// Display Name is purely informational (no REAPER state to reflect) - no
+	// glyph, just the (optionally tinted) background behind the key's title.
+	if (fn === "displayName") return svg("", bgColor);
+
 	const color = TRACK_COLOR[fn];
 	const opacity = opacityFor(lit);
 	if (fn === "mute") return svg(muteGlyph(color, opacity), bgColor);

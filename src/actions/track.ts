@@ -44,14 +44,15 @@ interface Instance {
 	bgColor: string | undefined;
 }
 
-const FUNCTION_SET_TOKEN: Record<TrackFunction, string> = {
+/** Display Name has no command token or flag - it's purely informational, handled separately wherever these are used. */
+const FUNCTION_SET_TOKEN: Record<Exclude<TrackFunction, "displayName">, string> = {
 	recarm: "RECARM",
 	mute: "MUTE",
 	solo: "SOLO",
 	select: "SEL",
 };
 
-const FLAG_FOR_FUNCTION: Record<TrackFunction, number> = {
+const FLAG_FOR_FUNCTION: Record<Exclude<TrackFunction, "displayName">, number> = {
 	recarm: TrackFlag.RecordArmed,
 	mute: TrackFlag.Muted,
 	solo: TrackFlag.Soloed,
@@ -99,6 +100,9 @@ export class Track extends SingletonAction<TrackSettings> {
 	}
 
 	override async onKeyDown(ev: KeyDownEvent<TrackSettings>): Promise<void> {
+		const fn = ev.payload.settings.function ?? "mute";
+		if (fn === "displayName") return; // purely informational - nothing to toggle on press
+
 		const targets = this.instances.get(ev.action.id)?.targets ?? [];
 		if (targets.length === 0) {
 			// Out of range, or "selected" with nothing selected - do nothing, per spec's edge-case handling.
@@ -106,7 +110,6 @@ export class Track extends SingletonAction<TrackSettings> {
 			return;
 		}
 
-		const fn = ev.payload.settings.function ?? "mute";
 		const token = FUNCTION_SET_TOKEN[fn];
 		const flag = FLAG_FOR_FUNCTION[fn];
 
@@ -167,8 +170,16 @@ export class Track extends SingletonAction<TrackSettings> {
 			return;
 		}
 
-		const flag = FLAG_FOR_FUNCTION[inst.fn];
-		const lit = targets.every((t) => (t.flags & flag) !== 0);
+		// Display Name has no flag to reflect - just treat "has a resolved
+		// target" as lit, so paint() draws the plain (optionally tinted) tile
+		// instead of the no-target dashed outline.
+		let lit: boolean;
+		if (inst.fn === "displayName") {
+			lit = true;
+		} else {
+			const flag = FLAG_FOR_FUNCTION[inst.fn];
+			lit = targets.every((t) => (t.flags & flag) !== 0);
+		}
 		if (inst.lit !== lit || bgChanged) {
 			inst.lit = lit;
 			this.paint(id);

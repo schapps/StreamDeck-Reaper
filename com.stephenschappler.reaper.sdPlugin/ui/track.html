@@ -85,13 +85,19 @@
             <option value="solo">Solo</option>
             <option value="recarm">Record Arm</option>
             <option value="select">Select</option>
+            <option value="displayName">Display Name</option>
         </sdpi-select>
     </sdpi-item>
     <sdpi-item label="Show Track Name">
         <sdpi-checkbox setting="showTrackName" default="true"></sdpi-checkbox>
     </sdpi-item>
     <sdpi-item label="Tint Track Color">
-        <sdpi-checkbox setting="tintTrackColor" default="false"></sdpi-checkbox>
+        <!-- No default="false" here: sdpi-checkbox reads its `default` attribute as a raw
+             string with no boolean coercion, so the literal string "false" is truthy and
+             renders checked - confirmed by reading the v4 bundle source. Omitting the
+             attribute leaves defaultValue genuinely undefined, which the component's own
+             render logic correctly treats as unchecked. -->
+        <sdpi-checkbox setting="tintTrackColor"></sdpi-checkbox>
     </sdpi-item>
 
     <script src="js/setup-panel.js?v=20260727-1"></script>
