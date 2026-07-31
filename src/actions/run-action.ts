@@ -15,8 +15,6 @@ import type { JsonObject } from "@elgato/utils";
 export interface RunActionSettings extends JsonObject {
 	actionId?: string;
 	actionName?: string;
-	/** Only "main" is usable today - see docs/protocol-findings.md on section targeting. */
-	section?: "main" | "midi_editor" | "media_explorer";
 	repeatOnHold?: boolean;
 	repeatIntervalMs?: number;
 }
