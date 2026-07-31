@@ -11,8 +11,8 @@ const SIZE = 72;
 const OFF_OPACITY = 0.35;
 const BG = "#1e1e1e";
 
-function svg(inner: string): string {
-	return `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}"><rect width="${SIZE}" height="${SIZE}" fill="${BG}"/>${inner}</svg>`;
+function svg(inner: string, bg: string = BG): string {
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}"><rect width="${SIZE}" height="${SIZE}" fill="${bg}"/>${inner}</svg>`;
 }
 
 function opacityFor(lit: boolean): number {
@@ -98,10 +98,11 @@ const TRACK_COLOR: Record<TrackFunction, string> = {
 	select: "#5A9BD5",
 };
 
-export function trackIcon(fn: TrackFunction, lit: boolean): string {
+/** `bgColor`, when given, replaces the key's default background (the "tint track color" option) - the function-colored square is unaffected, it's drawn on top either way. */
+export function trackIcon(fn: TrackFunction, lit: boolean, bgColor?: string): string {
 	const color = TRACK_COLOR[fn];
 	const opacity = opacityFor(lit);
-	return svg(`<rect x="10" y="10" width="52" height="52" rx="10" fill="${color}" opacity="${opacity}"/>`);
+	return svg(`<rect x="10" y="10" width="52" height="52" rx="10" fill="${color}" opacity="${opacity}"/>`, bgColor);
 }
 
 /** Neutral "out of range" / "no target" icon for Track Control keys. */
@@ -109,6 +110,17 @@ export function trackInactiveIcon(): string {
 	return svg(
 		`<rect x="10" y="10" width="52" height="52" rx="10" fill="none" stroke="#666" stroke-width="4" opacity="0.5"/>`,
 	);
+}
+
+/**
+ * Converts REAPER's TRACK color field (decimal 0xaarrggbb per main.js -
+ * confirmed via docs/protocol-findings.md item 6) to a CSS hex color, or
+ * undefined for 0 ("nonzero if a custom color set" - 0 means the track has
+ * no custom color and should keep the key's default background).
+ */
+export function reaperColorToHex(color: number): string | undefined {
+	if (!color) return undefined;
+	return `#${(color & 0xffffff).toString(16).padStart(6, "0")}`;
 }
 
 const RUN_ACTION_COLOR = "#1C9E8E";

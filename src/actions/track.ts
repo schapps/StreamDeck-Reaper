@@ -10,7 +10,14 @@ import type { JsonObject } from "@elgato/utils";
 import { connectionManager } from "../reaper/connection-manager.js";
 import { TrackFlag, type TrackState } from "../reaper/types.js";
 import { stateManager } from "../state.js";
-import { toImageParam, trackIcon, trackInactiveIcon, withDisconnectedBadge, type TrackFunction } from "../util/icons.js";
+import {
+	reaperColorToHex,
+	toImageParam,
+	trackIcon,
+	trackInactiveIcon,
+	withDisconnectedBadge,
+	type TrackFunction,
+} from "../util/icons.js";
 
 export interface TrackSettings extends JsonObject {
 	trackTarget?: "number" | "selected" | "master";
@@ -18,6 +25,8 @@ export interface TrackSettings extends JsonObject {
 	function?: TrackFunction;
 	/** Default true - put the track name (or "N Tracks" when multiple are targeted) on the key title. */
 	showTrackName?: boolean;
+	/** Default false - tint the key's background with the target track's REAPER color (first target's, when multiple are targeted). No effect on tracks with no custom color set. */
+	tintTrackColor?: boolean;
 }
 
 type TrackKeyAction = WillAppearEvent<TrackSettings>["action"];
@@ -31,6 +40,8 @@ interface Instance {
 	settings: TrackSettings;
 	/** Last state a poll delivered, cached so a settings change can be re-applied immediately instead of waiting for the next poll tick. */
 	lastTracks: TrackState[] | undefined;
+	/** Last-computed tint color (or undefined), tracked separately from `lit` so a track recoloring in REAPER repaints the key even when mute/solo/etc. state hasn't changed. */
+	bgColor: string | undefined;
 }
 
 const FUNCTION_SET_TOKEN: Record<TrackFunction, string> = {
@@ -65,6 +76,7 @@ export class Track extends SingletonAction<TrackSettings> {
 			targets: [],
 			settings,
 			lastTracks: undefined,
+			bgColor: undefined,
 		});
 		this.paint(ev.action.id);
 		stateManager.subscribe(ev.action.id, "track", (state) => {
@@ -142,8 +154,12 @@ export class Track extends SingletonAction<TrackSettings> {
 		inst.targets = targets;
 		inst.fn = settings.function ?? "mute";
 
+		const bgColor = settings.tintTrackColor ? reaperColorToHex(targets[0]?.color ?? 0) : undefined;
+		const bgChanged = inst.bgColor !== bgColor;
+		inst.bgColor = bgColor;
+
 		if (targets.length === 0) {
-			if (inst.lit !== undefined) {
+			if (inst.lit !== undefined || bgChanged) {
 				inst.lit = undefined;
 				this.paint(id);
 				if (settings.showTrackName ?? true) void inst.action.setTitle("");
@@ -153,7 +169,7 @@ export class Track extends SingletonAction<TrackSettings> {
 
 		const flag = FLAG_FOR_FUNCTION[inst.fn];
 		const lit = targets.every((t) => (t.flags & flag) !== 0);
-		if (inst.lit !== lit) {
+		if (inst.lit !== lit || bgChanged) {
 			inst.lit = lit;
 			this.paint(id);
 		}
@@ -171,7 +187,7 @@ export class Track extends SingletonAction<TrackSettings> {
 	private paint(id: string): void {
 		const inst = this.instances.get(id);
 		if (!inst) return;
-		const icon = inst.lit === undefined ? trackInactiveIcon() : trackIcon(inst.fn, inst.lit);
+		const icon = inst.lit === undefined ? trackInactiveIcon() : trackIcon(inst.fn, inst.lit, inst.bgColor);
 		void inst.action.setImage(toImageParam(this.disconnected ? withDisconnectedBadge(icon) : icon));
 	}
 }
