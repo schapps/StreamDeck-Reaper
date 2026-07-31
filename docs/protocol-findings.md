@@ -349,3 +349,49 @@ selection - not a uniform block toggle. The Track Control key's "selected"
 target mode (see the git history for `src/actions/track.ts`) computes
 uniform on/off state client-side from cached poll data instead of relying
 on those actions or the `SET/TRACK/.../-1` toggle form.
+
+---
+
+## Addendum: no media item or FX access at all
+
+Prompted by a user question ("can we display selected item name/pitch/rate,
+or the last-touched FX parameter?") - checked both the documented protocol
+and live behavior rather than assume from the item list above.
+
+**`reaper-main.js.reference`'s "Valid commands" block is exhaustive, not
+partial.** This is a small, fixed control-surface protocol implemented in
+REAPER's own C++ core (unlike a general REST API), and the comment block is
+REAPER's own developer documentation for exactly that protocol - there's no
+reason to expect hidden, undocumented commands alongside it. Confirmed
+anyway, live, rather than trust the absence-of-evidence: `GET/ITEM`,
+`GET/SELITEM`, `GET/TAKE`, `GET/ITEM/0`, `GET/FX`, and `GET/LASTTOUCHEDFX`
+all returned a completely empty body (no error, no line, nothing) against a
+live REAPER 7.77 instance with an open project. None of these are real
+commands.
+
+**What exists is exactly the categories in the "Valid commands" block**:
+transport, track info (including the `GetSetMediaTrackInfo()` passthrough at
+`GET`/`SET/TRACK/index/<key>`, which is track-scoped only), track
+sends/receives, markers/regions, MIDI lyrics per track, arbitrary action
+toggle-state, ExtState/ProjExtState, OSC passthrough, undo/seek/repeat.
+**Nothing for media items (name, position, length, pitch, rate, ...) or FX
+(parameter list, parameter values, last-touched-FX) exists at any layer of
+this interface.** This is a genuine protocol ceiling, not a gap in our
+findings.
+
+**The only viable path to that data is a REAPER-side bridge, not a
+web-interface trick**: combine two capabilities already verified above -
+named ReaScript command IDs resolve and run over `/_/` (flagged result #1),
+and `GET`/`SET/EXTSTATE/<section>/<key>` round-trips arbitrary strings
+(item 10) - by having a small always-running ReaScript (a "defer" background
+script) poll REAPER's real API (`TrackFX_GetLastTouchedFX`,
+`GetMediaItemInfo_Value`, `GetSetMediaItemTakeInfo_String`, etc.) and write
+the result into `ExtState`, then have the plugin poll
+`GET/EXTSTATE/<section>/<key>` to surface it. Note `ExtState` parsing
+already exists in this codebase (`src/reaper/types.ts`, `parseExtStateLine`
+in `src/reaper/parsers.ts`, `QuerySpec` `"EXTSTATE"` variant) and was
+verified live (item 10) - it's just not wired into `StateManager` or any
+Stream Deck key type yet, since nothing has needed it until this question
+came up. Not pursued for now (explicit user decision, 2026-07-31) - would
+require writing/installing a REAPER-side script, a meaningfully bigger lift
+than anything built so far, which has all been plugin-side only.
