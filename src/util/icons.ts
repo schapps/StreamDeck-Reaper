@@ -19,6 +19,20 @@ function opacityFor(lit: boolean): number {
 	return lit ? 1 : OFF_OPACITY;
 }
 
+/**
+ * setImage() docs (@elgato/streamdeck) list a bare SVG string as a legal
+ * image format alongside a base64-encoded data URI, but only the latter has
+ * been confirmed to actually render on Windows - a bare `<svg>` string sends
+ * successfully (the setImage() promise resolves) yet is silently never
+ * painted, leaving the manifest's static key art on screen forever. Encode
+ * as a proper data URI at the last possible moment (call sites, not inside
+ * icons.ts) so withDisconnectedBadge()'s `</svg>` string-splice still has
+ * raw markup to work with.
+ */
+export function toImageParam(svgMarkup: string): string {
+	return `data:image/svg+xml;base64,${Buffer.from(svgMarkup, "utf-8").toString("base64")}`;
+}
+
 export type TransportFunction =
 	| "play"
 	| "stop"

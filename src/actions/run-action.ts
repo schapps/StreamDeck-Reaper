@@ -8,7 +8,7 @@ import streamDeck, {
 	WillDisappearEvent,
 } from "@elgato/streamdeck";
 import { connectionManager } from "../reaper/connection-manager.js";
-import { runActionIcon, withDisconnectedBadge } from "../util/icons.js";
+import { runActionIcon, toImageParam, withDisconnectedBadge } from "../util/icons.js";
 import type { JsonObject } from "@elgato/utils";
 
 /** Milestone 2 scope: manual ID entry only - no action browser/import yet. */
@@ -101,7 +101,7 @@ export class RunAction extends SingletonAction<RunActionSettings> {
 
 	private iconFor(configured: boolean): string {
 		const icon = runActionIcon(configured);
-		return this.disconnected ? withDisconnectedBadge(icon) : icon;
+		return toImageParam(this.disconnected ? withDisconnectedBadge(icon) : icon);
 	}
 
 	private async fire(action: KeyDownEvent<RunActionSettings>["action"], actionId: string): Promise<void> {

@@ -1,5 +1,6 @@
 import streamDeck, {
 	action,
+	DidReceiveSettingsEvent,
 	KeyDownEvent,
 	SingletonAction,
 	WillAppearEvent,
@@ -9,7 +10,7 @@ import type { JsonObject } from "@elgato/utils";
 import { connectionManager } from "../reaper/connection-manager.js";
 import type { TransportState } from "../reaper/types.js";
 import { stateManager } from "../state.js";
-import { transportIcon, withDisconnectedBadge, type TransportFunction } from "../util/icons.js";
+import { toImageParam, transportIcon, withDisconnectedBadge, type TransportFunction } from "../util/icons.js";
 
 export interface TransportSettings extends JsonObject {
 	function?: TransportFunction;
@@ -24,6 +25,8 @@ interface Instance {
 	fn: TransportFunction;
 	blinkRecord: boolean | undefined;
 	lit: boolean;
+	/** Last state a poll delivered, cached so a Function change can repaint immediately instead of waiting for the next poll tick - which may never come if the underlying transport state hasn't actually changed (see StateManager.fanOut). */
+	lastTransport: TransportState | undefined;
 }
 
 /** Verified against a real REAPER action-list export - see docs/protocol-findings.md Milestone 3/4 addenda. */
@@ -52,7 +55,13 @@ export class Transport extends SingletonAction<TransportSettings> {
 	override onWillAppear(ev: WillAppearEvent<TransportSettings>): void | Promise<void> {
 		const fn = ev.payload.settings.function ?? "playStop";
 		this.ensureStatusHandler();
-		this.instances.set(ev.action.id, { action: ev.action, fn, blinkRecord: ev.payload.settings.blinkRecord, lit: false });
+		this.instances.set(ev.action.id, {
+			action: ev.action,
+			fn,
+			blinkRecord: ev.payload.settings.blinkRecord,
+			lit: false,
+			lastTransport: undefined,
+		});
 		this.paint(ev.action.id);
 		stateManager.subscribe(ev.action.id, "transport", (state) => {
 			if (state.transport) this.onState(ev.action.id, state.transport);
@@ -63,6 +72,22 @@ export class Transport extends SingletonAction<TransportSettings> {
 		stateManager.unsubscribe(ev.action.id);
 		this.stopBlink(ev.action.id);
 		this.instances.delete(ev.action.id);
+	}
+
+	/** Settings can change while the key stays visible (Function dropdown, Blink Record checkbox) - not just on the next willAppear. Recomputes lit from the last cached poll so the icon updates immediately rather than waiting on (possibly never arriving, if transport state hasn't changed) the next poll tick. */
+	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<TransportSettings>): void {
+		const inst = this.instances.get(ev.action.id);
+		if (!inst) return;
+		const fn = ev.payload.settings.function ?? "playStop";
+		const fnChanged = fn !== inst.fn;
+		inst.fn = fn;
+		inst.blinkRecord = ev.payload.settings.blinkRecord;
+		if (fnChanged) inst.lit = inst.lastTransport ? this.isLit(fn, inst.lastTransport) : false;
+
+		if (fn === "record" && inst.blinkRecord && inst.lit) this.startBlink(inst);
+		else this.stopBlink(ev.action.id);
+
+		this.paint(ev.action.id);
 	}
 
 	override async onKeyDown(ev: KeyDownEvent<TransportSettings>): Promise<void> {
@@ -90,6 +115,7 @@ export class Transport extends SingletonAction<TransportSettings> {
 	private onState(id: string, transport: TransportState): void {
 		const inst = this.instances.get(id);
 		if (!inst) return;
+		inst.lastTransport = transport;
 		const lit = this.isLit(inst.fn, transport);
 		if (lit === inst.lit) return;
 		inst.lit = lit;
@@ -107,7 +133,7 @@ export class Transport extends SingletonAction<TransportSettings> {
 		const inst = this.instances.get(id);
 		if (!inst) return;
 		const icon = transportIcon(inst.fn, inst.lit);
-		void inst.action.setImage(this.disconnected ? withDisconnectedBadge(icon) : icon);
+		void inst.action.setImage(toImageParam(this.disconnected ? withDisconnectedBadge(icon) : icon));
 	}
 
 	private isLit(fn: TransportFunction, transport: TransportState): boolean {
@@ -137,7 +163,7 @@ export class Transport extends SingletonAction<TransportSettings> {
 			const phase = !this.blinkPhase.get(id);
 			this.blinkPhase.set(id, phase);
 			const icon = transportIcon("record", phase);
-			void inst.action.setImage(this.disconnected ? withDisconnectedBadge(icon) : icon);
+			void inst.action.setImage(toImageParam(this.disconnected ? withDisconnectedBadge(icon) : icon));
 		}, BLINK_INTERVAL_MS);
 		this.blinkTimers.set(id, timer);
 	}

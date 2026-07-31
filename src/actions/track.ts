@@ -1,5 +1,6 @@
 import streamDeck, {
 	action,
+	DidReceiveSettingsEvent,
 	KeyDownEvent,
 	SingletonAction,
 	WillAppearEvent,
@@ -9,7 +10,7 @@ import type { JsonObject } from "@elgato/utils";
 import { connectionManager } from "../reaper/connection-manager.js";
 import { TrackFlag, type TrackState } from "../reaper/types.js";
 import { stateManager } from "../state.js";
-import { trackIcon, trackInactiveIcon, withDisconnectedBadge, type TrackFunction } from "../util/icons.js";
+import { toImageParam, trackIcon, trackInactiveIcon, withDisconnectedBadge, type TrackFunction } from "../util/icons.js";
 
 export interface TrackSettings extends JsonObject {
 	trackTarget?: "number" | "selected" | "master";
@@ -27,6 +28,9 @@ interface Instance {
 	lit: boolean | undefined;
 	fn: TrackFunction;
 	targets: TrackState[];
+	settings: TrackSettings;
+	/** Last state a poll delivered, cached so a settings change can be re-applied immediately instead of waiting for the next poll tick. */
+	lastTracks: TrackState[] | undefined;
 }
 
 const FUNCTION_SET_TOKEN: Record<TrackFunction, string> = {
@@ -59,16 +63,27 @@ export class Track extends SingletonAction<TrackSettings> {
 			lit: undefined,
 			fn: settings.function ?? "mute",
 			targets: [],
+			settings,
+			lastTracks: undefined,
 		});
 		this.paint(ev.action.id);
 		stateManager.subscribe(ev.action.id, "track", (state) => {
-			if (state.tracks) this.onState(ev.action.id, settings, state.tracks);
+			if (state.tracks) this.onState(ev.action.id, state.tracks);
 		});
 	}
 
 	override onWillDisappear(ev: WillDisappearEvent<TrackSettings>): void {
 		stateManager.unsubscribe(ev.action.id);
 		this.instances.delete(ev.action.id);
+	}
+
+	/** Settings (Function, track target, etc.) can change while the key stays visible, not just on the next willAppear - re-applies the last cached poll against the new settings so the icon/title update immediately. */
+	override onDidReceiveSettings(ev: DidReceiveSettingsEvent<TrackSettings>): void {
+		const inst = this.instances.get(ev.action.id);
+		if (!inst) return;
+		inst.settings = ev.payload.settings;
+		if (inst.lastTracks) this.onState(ev.action.id, inst.lastTracks);
+		this.paint(ev.action.id);
 	}
 
 	override async onKeyDown(ev: KeyDownEvent<TrackSettings>): Promise<void> {
@@ -117,9 +132,11 @@ export class Track extends SingletonAction<TrackSettings> {
 		});
 	}
 
-	private onState(id: string, settings: TrackSettings, tracks: TrackState[]): void {
+	private onState(id: string, tracks: TrackState[]): void {
 		const inst = this.instances.get(id);
 		if (!inst) return;
+		inst.lastTracks = tracks;
+		const settings = inst.settings;
 
 		const targets = resolveTracks(tracks, settings);
 		inst.targets = targets;
@@ -155,7 +172,7 @@ export class Track extends SingletonAction<TrackSettings> {
 		const inst = this.instances.get(id);
 		if (!inst) return;
 		const icon = inst.lit === undefined ? trackInactiveIcon() : trackIcon(inst.fn, inst.lit);
-		void inst.action.setImage(this.disconnected ? withDisconnectedBadge(icon) : icon);
+		void inst.action.setImage(toImageParam(this.disconnected ? withDisconnectedBadge(icon) : icon));
 	}
 }
 
