@@ -201,7 +201,13 @@ function resolveTracks(tracks: TrackState[], settings: TrackSettings): TrackStat
 	if (target === "selected") {
 		return tracks.filter((t) => t.index !== 0 && (t.flags & TrackFlag.Selected) !== 0);
 	}
-	const numbered = tracks.find((t) => t.index === settings.trackNumber);
+	// Confirmed live: sdpi-components persists this field's value as a string
+	// ("4") despite value-type="number" on the <sdpi-textfield>, so a strict
+	// === against TrackState.index (a real number) never matches. Coerce
+	// rather than trust the declared JsonObject type for what's actually on
+	// the wire from the PI.
+	const wanted = Number(settings.trackNumber);
+	const numbered = tracks.find((t) => t.index === wanted);
 	return numbered ? [numbered] : [];
 }
 
