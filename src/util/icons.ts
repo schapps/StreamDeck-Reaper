@@ -76,7 +76,7 @@ export function transportIcon(fn: TransportFunction, lit: boolean): string {
 			return svg(`<rect x="21" y="21" width="30" height="30" fill="${color}" opacity="${opacity}"/>`);
 		case "repeat":
 			return svg(
-				`<circle cx="36" cy="36" r="16" fill="none" stroke="${color}" stroke-width="6" opacity="${opacity}"/><polygon points="36,14 44,22 30,22" fill="${color}" opacity="${opacity}"/>`,
+				`<g transform="translate(18,18) scale(1.5)"><path fill="${color}" opacity="${opacity}" d="M17 5H6c-1.1 0-2 .9-2 2v5h2V7h11v3l5-4l-5-4zm1 12H7v-3l-5 4l5 4v-3h11c1.1 0 2-.9 2-2v-5h-2z"/></g>`,
 			);
 		case "gotoStart":
 			return svg(
@@ -93,15 +93,29 @@ export type TrackFunction = "recarm" | "mute" | "solo" | "select";
 
 const TRACK_COLOR: Record<TrackFunction, string> = {
 	recarm: "#E04040",
-	mute: "#E0E040",
-	solo: "#E0A030",
+	// Mute/solo are letter glyphs, not colored squares - white at full opacity
+	// for active, dimmed (via opacityFor) to a grey-ish white for inactive.
+	mute: "#FFFFFF",
+	solo: "#FFFFFF",
 	select: "#5A9BD5",
 };
 
-/** `bgColor`, when given, replaces the key's default background (the "tint track color" option) - the function-colored square is unaffected, it's drawn on top either way. */
+/** M glyph (256x256 source viewBox), scaled/translated to the same 10..62 footprint the rect icons use. */
+function muteGlyph(color: string, opacity: number): string {
+	return `<g transform="translate(10,10) scale(0.203125)" opacity="${opacity}"><path fill="${color}" fill-rule="evenodd" d="M208.552 206.834h-25v-92.492l-43.987 87.835q-1.622 3.357-4.532 5.09t-6.25 1.733q-3.245 0-6.06-1.733t-4.436-5.09l-44.179-87.835v92.492H49.3V63.548q0-4.874 2.528-8.665t6.632-5.09a11.7 11.7 0 0 1 4.007-.379a12 12 0 0 1 3.865.975q1.86.812 3.387 2.274t2.576 3.52l56.488 111.445L185.27 56.183q2.195-4.116 6.06-5.848t8.062-.542q4.008 1.3 6.584 5.09q2.577 3.792 2.576 8.665z"/></g>`;
+}
+
+/** S glyph (256x256 source viewBox), same footprint as muteGlyph. */
+function soloGlyph(color: string, opacity: number): string {
+	return `<g transform="translate(10,10) scale(0.203125)" opacity="${opacity}"><path fill="${color}" fill-rule="evenodd" d="M208.714 161.607q0 8.647-2.19 15.555q-2.19 6.906-5.784 12.185c-3.594 5.279-5.203 6.513-8.423 8.984q-4.828 3.705-9.995 6.065q-5.166 2.358-10.5 3.481Q166.487 209 161.771 209H49.129v-29.2H161.77q8.423 0 13.083-4.94q4.66-4.942 4.66-13.253q0-4.043-1.235-7.412q-1.234-3.369-3.537-5.84t-5.616-3.818t-7.355-1.348H94.612q-7.075 0-15.273-2.526q-8.199-2.528-15.217-8.142q-7.02-5.616-11.68-14.712t-4.66-22.237t4.66-22.18t11.68-14.712q7.018-5.67 15.217-8.198q8.198-2.527 15.273-2.527h99.39v29.2h-99.39q-8.31 0-12.97 5.053q-4.662 5.055-4.662 13.364q0 8.424 4.661 13.308q4.66 4.886 12.971 4.886h67.383q4.717.112 9.995 1.291q5.28 1.18 10.5 3.65q5.223 2.47 9.94 6.233t8.366 9.04q3.651 5.279 5.784 12.13q2.134 6.85 2.134 15.497"/></g>`;
+}
+
+/** `bgColor`, when given, replaces the key's default background (the "tint track color" option) - the function glyph/square is unaffected, it's drawn on top either way. */
 export function trackIcon(fn: TrackFunction, lit: boolean, bgColor?: string): string {
 	const color = TRACK_COLOR[fn];
 	const opacity = opacityFor(lit);
+	if (fn === "mute") return svg(muteGlyph(color, opacity), bgColor);
+	if (fn === "solo") return svg(soloGlyph(color, opacity), bgColor);
 	return svg(`<rect x="10" y="10" width="52" height="52" rx="10" fill="${color}" opacity="${opacity}"/>`, bgColor);
 }
 
