@@ -10,12 +10,14 @@ import type { JsonObject } from "@elgato/utils";
 import { connectionManager } from "../reaper/connection-manager.js";
 import { TrackFlag, type TrackState } from "../reaper/types.js";
 import { stateManager } from "../state.js";
+import { formatPan, formatVolumeDb } from "../util/format.js";
 import {
 	reaperColorToHex,
 	toImageParam,
 	trackIcon,
 	trackInactiveIcon,
 	withDisconnectedBadge,
+	type DisplayOnlyTrackFunction,
 	type TrackFunction,
 } from "../util/icons.js";
 
@@ -44,20 +46,24 @@ interface Instance {
 	bgColor: string | undefined;
 }
 
-/** Display Name has no command token or flag - it's purely informational, handled separately wherever these are used. */
-const FUNCTION_SET_TOKEN: Record<Exclude<TrackFunction, "displayName">, string> = {
+/** Display-only functions have no command token or flag - they're purely informational, handled separately wherever these are used. */
+const FUNCTION_SET_TOKEN: Record<Exclude<TrackFunction, DisplayOnlyTrackFunction>, string> = {
 	recarm: "RECARM",
 	mute: "MUTE",
 	solo: "SOLO",
 	select: "SEL",
 };
 
-const FLAG_FOR_FUNCTION: Record<Exclude<TrackFunction, "displayName">, number> = {
+const FLAG_FOR_FUNCTION: Record<Exclude<TrackFunction, DisplayOnlyTrackFunction>, number> = {
 	recarm: TrackFlag.RecordArmed,
 	mute: TrackFlag.Muted,
 	solo: TrackFlag.Soloed,
 	select: TrackFlag.Selected,
 };
+
+function isDisplayOnlyFunction(fn: TrackFunction): fn is DisplayOnlyTrackFunction {
+	return fn === "displayName" || fn === "displayVolume" || fn === "displayPan";
+}
 
 const MAX_TITLE_LENGTH = 20;
 
@@ -101,7 +107,7 @@ export class Track extends SingletonAction<TrackSettings> {
 
 	override async onKeyDown(ev: KeyDownEvent<TrackSettings>): Promise<void> {
 		const fn = ev.payload.settings.function ?? "mute";
-		if (fn === "displayName") return; // purely informational - nothing to toggle on press
+		if (isDisplayOnlyFunction(fn)) return; // purely informational - nothing to toggle on press
 
 		const targets = this.instances.get(ev.action.id)?.targets ?? [];
 		if (targets.length === 0) {
@@ -165,16 +171,16 @@ export class Track extends SingletonAction<TrackSettings> {
 			if (inst.lit !== undefined || bgChanged) {
 				inst.lit = undefined;
 				this.paint(id);
-				if (settings.showTrackName ?? true) void inst.action.setTitle("");
+				if (shouldShowTitle(inst.fn, settings)) void inst.action.setTitle("");
 			}
 			return;
 		}
 
-		// Display Name has no flag to reflect - just treat "has a resolved
-		// target" as lit, so paint() draws the plain (optionally tinted) tile
-		// instead of the no-target dashed outline.
+		// Display-only functions have no flag to reflect - just treat "has a
+		// resolved target" as lit, so paint() draws the plain (optionally
+		// tinted) tile instead of the no-target dashed outline.
 		let lit: boolean;
-		if (inst.fn === "displayName") {
+		if (isDisplayOnlyFunction(inst.fn)) {
 			lit = true;
 		} else {
 			const flag = FLAG_FOR_FUNCTION[inst.fn];
@@ -185,13 +191,8 @@ export class Track extends SingletonAction<TrackSettings> {
 			this.paint(id);
 		}
 
-		if (settings.showTrackName ?? true) {
-			const title =
-				targets.length > 1
-					? `${targets.length} Tracks`
-					: truncateTitle(targets[0]?.name || `Track ${targets[0]?.index}`);
-			void inst.action.setTitle(title);
-		}
+		const title = buildTitle(inst.fn, targets, settings);
+		if (title !== undefined) void inst.action.setTitle(title);
 	}
 
 	/** Repaints from current instance state - the only place setImage() is called. */
@@ -224,4 +225,31 @@ function resolveTracks(tracks: TrackState[], settings: TrackSettings): TrackStat
 
 function truncateTitle(name: string): string {
 	return name.length > MAX_TITLE_LENGTH ? `${name.slice(0, MAX_TITLE_LENGTH - 1)}…` : name;
+}
+
+function trackNameTitle(targets: TrackState[]): string {
+	return targets.length > 1
+		? `${targets.length} Tracks`
+		: truncateTitle(targets[0]?.name || `Track ${targets[0]?.index}`);
+}
+
+/** Whether a "no target resolved" state needs its title cleared - true whenever a resolved target would have shown something. */
+function shouldShowTitle(fn: TrackFunction, settings: TrackSettings): boolean {
+	return (settings.showTrackName ?? true) || fn === "displayVolume" || fn === "displayPan";
+}
+
+/** Returns undefined when nothing should be set (Show Track Name off, and fn isn't a value display). */
+function buildTitle(fn: TrackFunction, targets: TrackState[], settings: TrackSettings): string | undefined {
+	const showName = settings.showTrackName ?? true;
+
+	if (fn === "displayVolume" || fn === "displayPan") {
+		// Multiple resolved targets (e.g. "Selected Track" with >1 selected)
+		// have no single meaningful value to show - "N Tracks" already covers
+		// that ambiguity for the name, an em dash covers it here.
+		const target = targets.length === 1 ? targets[0] : undefined;
+		const valueText = target ? (fn === "displayVolume" ? formatVolumeDb(target.volume) : formatPan(target.pan)) : "—";
+		return showName ? `${trackNameTitle(targets)}\n${valueText}` : valueText;
+	}
+
+	return showName ? trackNameTitle(targets) : undefined;
 }
