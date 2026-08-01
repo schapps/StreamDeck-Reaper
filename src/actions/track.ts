@@ -67,7 +67,7 @@ function isDisplayOnlyFunction(fn: TrackFunction): fn is DisplayOnlyTrackFunctio
 
 const MAX_TITLE_LENGTH = 20;
 
-@action({ UUID: "com.stephenschappler.reaper.track" })
+@action({ UUID: "com.schapps.reaper.track" })
 export class Track extends SingletonAction<TrackSettings> {
 	private instances = new Map<string, Instance>();
 	private disconnected = connectionManager.current.status === "disconnected";

@@ -1,9 +1,10 @@
 node_modules/
 dist/
 build/
-com.stephenschappler.reaper.sdPlugin/bin/
-com.stephenschappler.reaper.sdPlugin/ui/js/action-browser.js
-com.stephenschappler.reaper.sdPlugin/data/actions-imported.json
+com.schapps.reaper.sdPlugin/bin/
+com.schapps.reaper.sdPlugin/ui/js/action-browser.js
+com.schapps.reaper.sdPlugin/data/actions-imported.json
+*.streamDeckPlugin
 *.log
 logs/
 .DS_Store

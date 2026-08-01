@@ -29,7 +29,7 @@ interface Instance {
 const REPEAT_INITIAL_DELAY_MS = 400;
 const REPEAT_HARD_STOP_COUNT = 100;
 
-@action({ UUID: "com.stephenschappler.reaper.runaction" })
+@action({ UUID: "com.schapps.reaper.runaction" })
 export class RunAction extends SingletonAction<RunActionSettings> {
 	private instances = new Map<string, Instance>();
 	private repeatTimers = new Map<string, ReturnType<typeof setTimeout>>();

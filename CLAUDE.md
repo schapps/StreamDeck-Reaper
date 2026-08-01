@@ -111,8 +111,8 @@ writing or changing a parser in `src/reaper/parsers.ts`.
 
 ## Stream Deck SDK v2 patterns
 
-- Plugin UUID `com.stephenschappler.reaper`, bundle dir
-  `com.stephenschappler.reaper.sdPlugin`.
+- Plugin UUID `com.schapps.reaper`, bundle dir
+  `com.schapps.reaper.sdPlugin`.
 - One `SingletonAction` subclass per key type, under `src/actions/`.
 - A single `StateManager` owns all polling; individual keys register state
   needs on `willAppear` / deregister on `willDisappear` and never poll
@@ -139,8 +139,8 @@ Node 20 (installed via `brew install node@20`, keg-only — linked onto PATH).
 - `npm run build` — rollup, two outputs: `bin/plugin.js` (Node backend) and `ui/js/action-browser.js` (PI, browser-targeted)
 - `npm run build:actions` — regenerate `data/actions-native.json` from `tools/ActionList.txt`
 - `npm run watch` — rollup watch mode, restarts the plugin in Stream Deck on each rebuild
-- `npx @elgato/cli restart com.stephenschappler.reaper` — reload the built plugin into a running Stream Deck app
-- `npx @elgato/cli validate com.stephenschappler.reaper.sdPlugin` — validate the manifest/bundle
+- `npx @elgato/cli restart com.schapps.reaper` — reload the built plugin into a running Stream Deck app
+- `npx @elgato/cli validate com.schapps.reaper.sdPlugin` — validate the manifest/bundle
 
 The PI (`ui/run-action.html` + `ui/js/run-action.js`) talks to the plugin via
 `window.SDPIComponents.streamDeckClient` (from the loaded sdpi-components
@@ -196,7 +196,7 @@ touched recently.
 
 The user's imported action list is **not** in Stream Deck global
 settings — it's a JSON file on disk at
-`com.stephenschappler.reaper.sdPlugin/data/actions-imported.json`
+`com.schapps.reaper.sdPlugin/data/actions-imported.json`
 (`src/actiondb/import-store.ts`), gitignored, alongside the bundled
 `data/actions-native.json`. A full export runs to thousands of rows
 (~1.2MB as JSON); global settings round-trip over the local WebSocket on
@@ -251,7 +251,7 @@ carries the raw file text, read client-side via `FileReader` in
   it; build a plain `fetch("../en.json")` + DOM-swap approach instead if
   PI localization is ever actually needed (i.e. a second locale gets
   translated - there's no user-facing benefit to building this before
-  then). `com.stephenschappler.reaper.sdPlugin/en.json` exists and is
+  then). `com.schapps.reaper.sdPlugin/en.json` exists and is
   real/working for the **manifest-level** strings (plugin Name/Description,
   per-action Name/Tooltip, keyed by UUID) and for the **backend's** own
   `streamDeck.i18n` (a different, working implementation, via

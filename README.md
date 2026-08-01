@@ -79,7 +79,7 @@ Requires Node 20.
 npm install
 npm test           # vitest
 npm run typecheck   # tsc --noEmit across the Node, test, and PI (browser) projects
-npm run build        # rollup -> com.stephenschappler.reaper.sdPlugin/{bin,ui/js}
+npm run build        # rollup -> com.schapps.reaper.sdPlugin/{bin,ui/js}
 npm run build:actions # regenerate data/actions-native.json from tools/ActionList.txt
 npm run build:icons   # rasterize design/icons/*.svg -> the PNGs the manifest requires
 ```
@@ -87,8 +87,8 @@ npm run build:icons   # rasterize design/icons/*.svg -> the PNGs the manifest re
 To try it locally in a running Stream Deck app:
 
 ```sh
-npx @elgato/cli link com.stephenschappler.reaper.sdPlugin
-npx @elgato/cli restart com.stephenschappler.reaper
+npx @elgato/cli link com.schapps.reaper.sdPlugin
+npx @elgato/cli restart com.schapps.reaper
 ```
 
 `npm run watch` rebuilds and restarts the plugin automatically on save.

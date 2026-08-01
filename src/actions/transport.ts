@@ -44,7 +44,7 @@ const FUNCTION_ACTION_ID: Record<TransportFunction, string> = {
 
 const BLINK_INTERVAL_MS = 1000;
 
-@action({ UUID: "com.stephenschappler.reaper.transport" })
+@action({ UUID: "com.schapps.reaper.transport" })
 export class Transport extends SingletonAction<TransportSettings> {
 	private instances = new Map<string, Instance>();
 	private blinkTimers = new Map<string, ReturnType<typeof setInterval>>();

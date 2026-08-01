@@ -54,8 +54,8 @@ This constraint is deliberate and is the primary design driver. Where a feature 
 | HTTP client | Node built-in `fetch` / `undici` — no heavy dependency |
 | Tests | `vitest` |
 
-Plugin UUID: `com.stephenschappler.reaper`
-Bundle directory: `com.stephenschappler.reaper.sdPlugin`
+Plugin UUID: `com.schapps.reaper`
+Bundle directory: `com.schapps.reaper.sdPlugin`
 
 ---
 
@@ -166,7 +166,7 @@ Four action types ship in v1. Each is a separate `SingletonAction` subclass unde
 
 ### 6.1 Run Action
 
-`com.stephenschappler.reaper.runaction` — Controller: `Keypad`
+`com.schapps.reaper.runaction` — Controller: `Keypad`
 
 The core feature.
 
@@ -200,7 +200,7 @@ The core feature.
 
 ### 6.2 Transport
 
-`com.stephenschappler.reaper.transport` — Controller: `Keypad`
+`com.schapps.reaper.transport` — Controller: `Keypad`
 
 **Settings**
 
@@ -221,7 +221,7 @@ Poll `TRANSPORT` at 5 Hz while any transport key is visible.
 
 ### 6.3 Track Control
 
-`com.stephenschappler.reaper.track` — Controller: `Keypad`
+`com.schapps.reaper.track` — Controller: `Keypad`
 
 **Settings**
 
@@ -245,7 +245,7 @@ Poll `TRANSPORT` at 5 Hz while any transport key is visible.
 
 ### 6.4 Dial
 
-`com.stephenschappler.reaper.dial` — Controller: `Encoder`
+`com.schapps.reaper.dial` — Controller: `Encoder`
 
 Two modes, chosen per dial.
 
@@ -431,7 +431,7 @@ Log through `streamDeck.logger` at appropriate levels. Never log credentials. Pr
 
 ```
 reaper-streamdeck/
-├── com.stephenschappler.reaper.sdPlugin/
+├── com.schapps.reaper.sdPlugin/
 │   ├── manifest.json
 │   ├── bin/
 │   ├── imgs/

@@ -1,15 +1,15 @@
 {
 	"Name": "REAPER Control",
 	"Description": "Execute REAPER actions directly from Stream Deck over REAPER's built-in web interface.",
-	"com.stephenschappler.reaper.runaction": {
+	"com.schapps.reaper.runaction": {
 		"Name": "Run Action",
 		"Tooltip": "Runs a REAPER action (numeric or named command ID) directly, without a hotkey."
 	},
-	"com.stephenschappler.reaper.transport": {
+	"com.schapps.reaper.transport": {
 		"Name": "Transport",
 		"Tooltip": "Play, stop, pause, record, repeat, or seek - with live state feedback from REAPER."
 	},
-	"com.stephenschappler.reaper.track": {
+	"com.schapps.reaper.track": {
 		"Name": "Track Control",
 		"Tooltip": "Mute, solo, record-arm, or select a track - with live state feedback from REAPER."
 	},

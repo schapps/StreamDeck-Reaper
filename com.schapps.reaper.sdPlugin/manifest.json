@@ -5,7 +5,7 @@
 	"Actions": [
 		{
 			"Name": "Run Action",
-			"UUID": "com.stephenschappler.reaper.runaction",
+			"UUID": "com.schapps.reaper.runaction",
 			"Icon": "imgs/actions/runaction/icon",
 			"Tooltip": "Runs a REAPER action (numeric or named command ID) directly, without a hotkey.",
 			"PropertyInspectorPath": "ui/run-action.html",
@@ -21,7 +21,7 @@
 		},
 		{
 			"Name": "Transport",
-			"UUID": "com.stephenschappler.reaper.transport",
+			"UUID": "com.schapps.reaper.transport",
 			"Icon": "imgs/actions/transport/icon",
 			"Tooltip": "Play, stop, pause, record, repeat, or seek - with live state feedback from REAPER.",
 			"PropertyInspectorPath": "ui/transport.html",
@@ -37,7 +37,7 @@
 		},
 		{
 			"Name": "Track Control",
-			"UUID": "com.stephenschappler.reaper.track",
+			"UUID": "com.schapps.reaper.track",
 			"Icon": "imgs/actions/track/icon",
 			"Tooltip": "Mute, solo, record-arm, or select a track - with live state feedback from REAPER.",
 			"PropertyInspectorPath": "ui/track.html",
@@ -76,5 +76,5 @@
 		"Debug": "enabled"
 	},
 	"URL": "https://github.com/schapps/StreamDeck-Reaper",
-	"UUID": "com.stephenschappler.reaper"
+	"UUID": "com.schapps.reaper"
 }

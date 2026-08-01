@@ -6,7 +6,7 @@ import path from "node:path";
 import url from "node:url";
 
 const isWatching = !!process.env.ROLLUP_WATCH;
-const sdPlugin = "com.stephenschappler.reaper.sdPlugin";
+const sdPlugin = "com.schapps.reaper.sdPlugin";
 
 /**
  * @type {import('rollup').RollupOptions}

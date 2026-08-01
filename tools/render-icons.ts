@@ -19,7 +19,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(__dirname, "..", "design", "icons");
-const OUT = path.join(__dirname, "..", "com.stephenschappler.reaper.sdPlugin", "imgs");
+const OUT = path.join(__dirname, "..", "com.schapps.reaper.sdPlugin", "imgs");
 
 interface Target {
 	source: string;

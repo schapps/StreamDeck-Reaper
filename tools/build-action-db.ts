@@ -27,7 +27,7 @@ const INPUT_PATH = path.join(__dirname, "ActionList.txt");
 const OUTPUT_PATH = path.join(
 	__dirname,
 	"..",
-	"com.stephenschappler.reaper.sdPlugin",
+	"com.schapps.reaper.sdPlugin",
 	"data",
 	"actions-native.json",
 );
