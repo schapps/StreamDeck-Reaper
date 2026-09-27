@@ -158,6 +158,18 @@ export function runActionIcon(configured: boolean): string {
 	);
 }
 
+const INSERT_FX_COLOR = "#8E6CD9";
+
+/** An FX slot with a plus - same shapes as design/icons/key-insert-fx.svg. */
+export function insertFxIcon(configured: boolean): string {
+	const color = configured ? INSERT_FX_COLOR : "#666";
+	const opacity = configured ? 1 : 0.5;
+	return svg(
+		`<g opacity="${opacity}"><rect x="16" y="19" width="40" height="32" rx="6" fill="none" stroke="${color}" stroke-width="5"/>` +
+			`<rect x="33.5" y="26" width="5" height="18" rx="2.5" fill="${color}"/><rect x="27" y="32.5" width="18" height="5" rx="2.5" fill="${color}"/></g>`,
+	);
+}
+
 /**
  * Overlays a small corner badge on an already-rendered icon (spec section 9:
  * "a small badge in the corner, not a full icon replacement, so the key

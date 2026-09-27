@@ -20,7 +20,9 @@
 	// perfectly valid number (Number(undefined) is NaN, and !NaN is true).
 	// Track the real setting values ourselves via client.getSettings() /
 	// didReceiveSettings instead of reading .value at load time.
-	let trackTarget = "number";
+	// Track Control defaults to a track number, Insert FX to the selected track.
+	const defaultTarget = targetSelect.getAttribute("default") || "number";
+	let trackTarget = defaultTarget;
 	let trackNumber;
 	let lastNtrack = null;
 	let checkTimer = null;
@@ -43,7 +45,7 @@
 	}
 
 	function applySettings(settings) {
-		trackTarget = settings.trackTarget ?? "number";
+		trackTarget = settings.trackTarget ?? defaultTarget;
 		trackNumber = settings.trackNumber;
 		updateTrackNumberVisibility();
 		evaluateWarning();

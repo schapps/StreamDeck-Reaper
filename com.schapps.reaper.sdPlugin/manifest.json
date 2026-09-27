@@ -50,6 +50,22 @@
 					"TitleAlignment": "bottom"
 				}
 			]
+		},
+		{
+			"Name": "Insert FX",
+			"UUID": "com.schapps.reaper.insertfx",
+			"Icon": "imgs/actions/insertfx/icon",
+			"Tooltip": "Adds a plugin, JS effect, or saved FX chain to a track. Needs the one-time REAPER bridge script setup.",
+			"PropertyInspectorPath": "ui/insert-fx.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/insertfx/key",
+					"TitleAlignment": "bottom"
+				}
+			]
 		}
 	],
 	"Category": "REAPER Control",

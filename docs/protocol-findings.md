@@ -395,3 +395,66 @@ Stream Deck key type yet, since nothing has needed it until this question
 came up. Not pursued for now (explicit user decision, 2026-07-31) - would
 require writing/installing a REAPER-side script, a meaningfully bigger lift
 than anything built so far, which has all been plugin-side only.
+
+---
+
+## Addendum: FX insertion via the bridge ReaScript (2026-09-26)
+
+The addendum above leaves FX as a protocol ceiling for the web interface
+itself. FX *insertion* is now done through the bridge it proposes, but as a
+one-shot script rather than a `defer` loop:
+`com.schapps.reaper.sdPlugin/scripts/REAPER Control - Stream Deck bridge.lua`.
+Everything below was verified live against REAPER 7.80/macOS-arm64
+(portable install), with the script loaded via Actions > Load ReaScript.
+
+**Registration.** Running the script once by hand (no pending request)
+writes persistent ExtState `ReaperControl/commandId` (its own `_RS…` ID,
+via `get_action_context` + `ReverseNamedCommandLookup`) and
+`ReaperControl/resourcePath` (`GetResourcePath()`). Both read back fine over
+`GET/EXTSTATE`. This is how the plugin finds the script's ID and the
+resource folder - including for portable installs, which don't live at
+`~/Library/Application Support/REAPER` - without parsing `reaper-kb.ini`
+or guessing paths.
+
+**Ordering within one request holds.** A single
+`SET/EXTSTATE/ReaperControl/request/<enc>;<_RS id>;GET/EXTSTATE/ReaperControl/result`
+executes left to right: the script runs synchronously and its result is
+readable by the trailing `GET` in the same response. Values round-trip with
+`%09` (tab) and `%2F` (slash) URL-encoded. Tabs in the returned value come
+back escaped as a literal `\t` - already handled by `unescapeString` in
+`parseExtStateLine`, per REAPER's own documented encoding.
+
+**Heavy FX chains block REAPER's main thread for seconds.** Inserting a
+13-plugin `.RfxChain` of third-party plugins stalled the web interface past
+a 5 s client timeout; REAPER then recovered and processed every queued
+request normally. Insert requests need a much longer timeout than polling,
+and a timeout there must not be reported as "didn't happen."
+
+**`TrackFX_AddByName` name forms that resolve** (result reports the FX
+REAPER actually added):
+
+| Sent | Added |
+|---|---|
+| `ReaEQ (Cockos)`, `VST: ReaEQ (Cockos)`, `VST: reaeq.vst.dylib`, `ReaComp` | the Cockos VST (loose / filename matching both work) |
+| `VST3: Brusfri (Klevgrand)`, `Brusfri.vst3` | VST3 |
+| `VST: Brusfri (Klevgrand)` | **VST3** when both exist - `VST:` doesn't pin the format |
+| `VST2: Brusfri (Klevgrand)`, `Brusfri.vst` | VST2 |
+| `VSTi: ReaSynDr (Cockos)` | `VSTi: ReaSynDr (Cockos) (4 out)` - channel suffix optional |
+| `AU: Apple: AUDelay`, `AUi: Apple: AUSampler` | AU/AUi - use the `Vendor: Name` key from `reaper-auplugins*.ini` |
+| `CLAP: Filterjam (AudioThing)`, `CLAP: com.AudioThing.Filterjam` | CLAP |
+| `JS: 1175 D`, `JS: ReaTeam JSFX/Utility/ReaperBlog_-12dB Dim.jsfx` | JS by description or by path relative to `Effects/` |
+| `Test Chain.RfxChain`, `UESC/<name>.RfxChain` | the whole chain, path relative to `FXChains/`; plugins that can't load are added offline, REAPER's normal chain behavior |
+
+Unknown names fail cleanly (`TrackFX_AddByName` returns -1 → script reports
+`error`). **Plugin caches go stale**: `reaper-vstplugins*.ini` still listed
+FabFilter Pro-C 2 (VST3/CLAP) after it was uninstalled; every form of it
+failed. An FX picked from the cache can legitimately be "not found."
+
+**Which cache files a given REAPER reads** depends on its build, reported by
+`GetAppVersion()` (e.g. `7.80/macOS-arm64`): arm64 macOS uses the `_arm64` /
+`-macos-aarch64` files. This resource folder is also shared with a Windows
+install, so `reaper-vstplugins64.ini` mixes `.dll` and `.vst3` entries -
+filter by the running platform's plugin file extensions, don't trust the
+file wholesale. `*-bc.ini` AU files and `reaper-vstplugins64.ini` lines of
+the form `<hex>=<guid> - file.vst3/IPluginCompatibility` are not plugin
+entries.

@@ -2,10 +2,10 @@
 <html>
 
 <head lang="en">
-    <title>Track Control Settings</title>
+    <title>Insert FX Settings</title>
     <meta charset="utf-8" />
     <script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
-    <link rel="stylesheet" href="css/run-action.css?v=20260727-1" />
+    <link rel="stylesheet" href="css/run-action.css?v=20260926-1" />
 </head>
 
 <body>
@@ -66,10 +66,51 @@
 
     <hr />
 
+    <div id="bridge-setup" class="hidden">
+        <sdpi-item label="">
+            <div class="setup-copy">
+                <p><strong>One-time REAPER setup</strong></p>
+                <p class="hint">REAPER's web interface can't add FX by itself, so this key uses a small helper script inside REAPER.</p>
+                <ol>
+                    <li>Click <strong>Show script file</strong> below</li>
+                    <li>In REAPER, open <strong>Actions &rarr; Show action list</strong>, then <strong>New action &rarr; Load ReaScript…</strong> and choose that file</li>
+                    <li class="emphasis">With the script selected in the action list, click <strong>Run</strong> - you'll see a confirmation</li>
+                    <li>Click <strong>Check again</strong> below</li>
+                </ol>
+            </div>
+        </sdpi-item>
+        <sdpi-item label="">
+            <button id="reveal-script-btn" type="button">Show script file</button>
+            <button id="check-bridge-btn" type="button">Check again</button>
+        </sdpi-item>
+        <sdpi-item label="">
+            <p id="bridge-status" class="hint">Checking REAPER…</p>
+        </sdpi-item>
+    </div>
+
+    <sdpi-item label="" id="bridge-ready" class="hidden">
+        <span class="hint"></span>
+        <button id="refresh-fx-btn" type="button" class="link-button">Refresh list</button>
+    </sdpi-item>
+
+    <sdpi-item label="FX">
+        <span id="fx-name" class="hint">None - use Browse FX below.</span>
+    </sdpi-item>
+    <sdpi-item label="">
+        <button id="browse-fx-btn" type="button" disabled>Browse FX…</button>
+    </sdpi-item>
+    <!-- Set from the FX browser; bound so all saves go through sdpi-components' single settings store (see selectFx in src/pi/fx-browser.ts). -->
+    <div class="hidden">
+        <sdpi-textfield id="fx-id-field" setting="fxId"></sdpi-textfield>
+        <sdpi-textfield id="fx-name-field" setting="fxName"></sdpi-textfield>
+    </div>
+    <sdpi-item label="Key Label">
+        <sdpi-textfield id="fx-label-field" setting="fxLabel" placeholder="Optional label for the key"></sdpi-textfield>
+    </sdpi-item>
     <sdpi-item label="Track">
-        <sdpi-select id="track-target-select" setting="trackTarget" default="number">
+        <sdpi-select id="track-target-select" setting="trackTarget" default="selected">
+            <option value="selected">Selected Tracks</option>
             <option value="number">Track Number</option>
-            <option value="selected">Selected Track</option>
             <option value="master">Master</option>
         </sdpi-select>
     </sdpi-item>
@@ -79,31 +120,34 @@
     <sdpi-item label="" id="track-number-warning" class="hidden">
         <p class="hint hint-warning">This track number is higher than your project's track count.</p>
     </sdpi-item>
-    <sdpi-item label="Function">
-        <sdpi-select setting="function" default="mute">
-            <option value="mute">Mute</option>
-            <option value="solo">Solo</option>
-            <option value="recarm">Record Arm</option>
-            <option value="select">Select</option>
-            <option value="displayName">Display Name</option>
-            <option value="displayVolume">Display Volume</option>
-            <option value="displayPan">Display Pan</option>
+    <sdpi-item label="After Inserting">
+        <sdpi-select setting="fxWindow" default="none">
+            <option value="none">Don't open a window</option>
+            <option value="floating">Open the FX window</option>
+            <option value="chain">Open the track's FX chain</option>
         </sdpi-select>
     </sdpi-item>
-    <sdpi-item label="Show Track Name">
-        <sdpi-checkbox setting="showTrackName" default="true"></sdpi-checkbox>
-    </sdpi-item>
-    <sdpi-item label="Tint Track Color">
-        <!-- No default="false" here: sdpi-checkbox reads its `default` attribute as a raw
-             string with no boolean coercion, so the literal string "false" is truthy and
-             renders checked - confirmed by reading the v4 bundle source. Omitting the
-             attribute leaves defaultValue genuinely undefined, which the component's own
-             render logic correctly treats as unchecked. -->
-        <sdpi-checkbox setting="tintTrackColor"></sdpi-checkbox>
-    </sdpi-item>
+
+    <div id="fx-browser-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input id="fx-search-input" type="text" placeholder="Search FX…" autocomplete="off" />
+                <select id="fx-kind-select">
+                    <option value="all">All</option>
+                    <option value="effects">Effects</option>
+                    <option value="instruments">Instruments</option>
+                    <option value="JS">JS</option>
+                    <option value="Chain">FX Chains</option>
+                </select>
+                <button id="fx-browser-close" type="button" class="modal-close">&times;</button>
+            </div>
+            <div id="fx-results" class="action-results"></div>
+        </div>
+    </div>
 
     <script src="js/setup-panel.js?v=20260727-1"></script>
     <script src="js/track.js?v=20260926-1"></script>
+    <script src="js/fx-browser.js?v=20260927-1"></script>
 </body>
 
 </html>

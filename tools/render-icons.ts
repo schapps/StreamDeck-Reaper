@@ -51,6 +51,12 @@ const TARGETS: Target[] = [
 	{ source: "mark-track.svg", outFile: "actions/track/icon@2x.png", size: 40 },
 	{ source: "key-track.svg", outFile: "actions/track/key.png", size: 72 },
 	{ source: "key-track.svg", outFile: "actions/track/key@2x.png", size: 144 },
+
+	// Insert FX
+	{ source: "mark-insert-fx.svg", outFile: "actions/insertfx/icon.png", size: 20 },
+	{ source: "mark-insert-fx.svg", outFile: "actions/insertfx/icon@2x.png", size: 40 },
+	{ source: "key-insert-fx.svg", outFile: "actions/insertfx/key.png", size: 72 },
+	{ source: "key-insert-fx.svg", outFile: "actions/insertfx/key@2x.png", size: 144 },
 ];
 
 function main(): void {

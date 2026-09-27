@@ -1,4 +1,9 @@
-import type { ActionEntry } from "./types.js";
+/** Anything with an ID, a name and tags - actions (ActionEntry) and FX (FxEntry) both fit. */
+export interface Searchable {
+	id: string;
+	name: string;
+	tags: string[];
+}
 
 export interface SearchOptions {
 	limit?: number;
@@ -12,7 +17,7 @@ export interface SearchOptions {
  * entirely, fall back to a compact in-order subsequence match against the
  * name, so a query like "trstp" can still surface "Transport: Stop".
  */
-export function searchActions(actions: ActionEntry[], query: string, options: SearchOptions = {}): ActionEntry[] {
+export function searchActions<T extends Searchable>(actions: T[], query: string, options: SearchOptions = {}): T[] {
 	const trimmed = query.trim();
 	if (!trimmed) return [];
 
@@ -20,7 +25,7 @@ export function searchActions(actions: ActionEntry[], query: string, options: Se
 	const exactId = actions.find((a) => a.id.toLowerCase() === queryLower);
 
 	const words = queryLower.split(/\s+/).filter(Boolean);
-	const scored: { action: ActionEntry; score: number }[] = [];
+	const scored: { action: T; score: number }[] = [];
 
 	for (const action of actions) {
 		if (exactId && action.id === exactId.id) continue;

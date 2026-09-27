@@ -150,6 +150,16 @@ form fields use sdpi-components' `global` attribute; `value-type="number"`
 is required on numeric fields (`type="number"` alone only changes the
 native input, not what gets persisted).
 
+**Never write per-action settings with `client.setSettings()` from PI code
+on a page that has bound `sdpi-*` fields.** The bundle's settings store
+(class `Yt`) keeps its own copy of the settings, refreshed only by
+`didReceiveSettings`, and saves that *whole* copy whenever any bound field
+changes - silently reverting whatever `setSettings()` just wrote. Hit live
+in the Insert FX PI: picking a new FX updated the key label but kept
+inserting the previous FX. Write every value through a bound field instead
+(hidden `sdpi-textfield`s if it has no visible one) using `setFieldValue()`
+from `src/pi/sdpi.ts`.
+
 ### Two TypeScript "projects", and the tsconfig `exclude` trap
 
 `src/pi/` (currently just `action-browser.ts`) runs in the PI's browser

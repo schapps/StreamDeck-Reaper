@@ -190,3 +190,18 @@
 	color: #eee;
 	padding: 4px 6px;
 }
+
+.modal-header select {
+	margin-left: 6px;
+	background: #1e1e1e;
+	border: 1px solid #444;
+	border-radius: 4px;
+	color: #eee;
+	padding: 5px 4px;
+	font-size: 12px;
+}
+
+#fx-name {
+	font-size: 12px;
+	word-break: break-word;
+}

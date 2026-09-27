@@ -13,6 +13,10 @@
 		"Name": "Track Control",
 		"Tooltip": "Mute, solo, record-arm, or select a track - with live state feedback from REAPER."
 	},
+	"com.schapps.reaper.insertfx": {
+		"Name": "Insert FX",
+		"Tooltip": "Adds a plugin, JS effect, or saved FX chain to a track. Needs the one-time REAPER bridge script setup."
+	},
 	"Localization": {
 		"setup.title": "Connect to REAPER",
 		"setup.step1": "In REAPER, open Options → Preferences → Control/OSC/web",

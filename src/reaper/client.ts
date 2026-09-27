@@ -142,6 +142,32 @@ export class ReaperClient extends EventEmitter {
 		}
 	}
 
+	/**
+	 * Sends one request on its own - outside the batch window, with its own
+	 * timeout. For bridge-script calls (src/reaper/bridge.ts), whose tokens
+	 * must run together and in order, and which can legitimately take far
+	 * longer than a poll: inserting a heavy FX chain blocks REAPER for
+	 * seconds (see docs/protocol-findings.md). Like testConnection(), it's
+	 * an explicit user action, so it skips the reconnection backoff gate.
+	 */
+	async sendImmediate(tokens: string[], timeoutMs: number): Promise<ReaperState> {
+		this.lastAttemptAt = Date.now();
+		let res: Response;
+		try {
+			res = await this.doFetch(tokens.join(";"), timeoutMs);
+		} catch (e) {
+			this.handleRequestResult(false);
+			throw e instanceof Error ? e : new Error(String(e));
+		}
+		if (res.status === 401) {
+			this.handleRequestResult(false);
+			throw new Error("REAPER web interface authentication failed.");
+		}
+		const state = parseResponseBody(await res.text());
+		this.handleRequestResult(true);
+		return state;
+	}
+
 	private scheduleFlush(): void {
 		if (this.flushTimer !== null) return;
 		this.flushTimer = setTimeout(() => {
@@ -204,9 +230,9 @@ export class ReaperClient extends EventEmitter {
 		}
 	}
 
-	private async doFetch(commandString: string): Promise<Response> {
+	private async doFetch(commandString: string, timeoutMs = this.options.timeoutMs): Promise<Response> {
 		const controller = new AbortController();
-		const timer = setTimeout(() => controller.abort(), this.options.timeoutMs);
+		const timer = setTimeout(() => controller.abort(), timeoutMs);
 		try {
 			const headers: Record<string, string> = {};
 			if (this.options.username || this.options.password) {

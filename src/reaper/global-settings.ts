@@ -19,6 +19,8 @@ export interface GlobalSettings extends JsonObject {
 	recentActions?: string[];
 	/** Action IDs starred in the action browser. */
 	favorites?: string[];
+	/** FX ids (FxEntry.id) picked in the FX browser, most-recent first, capped at 20. */
+	recentFx?: string[];
 }
 
 export const GLOBAL_SETTINGS_DEFAULTS: Required<Pick<GlobalSettings, "host" | "port" | "timeoutMs">> = {

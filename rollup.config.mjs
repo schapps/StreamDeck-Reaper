@@ -47,30 +47,32 @@ const pluginConfig = {
 };
 
 /**
- * Browser-targeted bundle for the property inspector's action browser
- * (src/pi/) - separate from pluginConfig above because it runs in the PI's
- * browser context, not Node, and is loaded via a plain <script> tag rather
- * than as the plugin's CodePath entry point. Exists so the PI can import
- * src/actiondb/search.ts (the tested fuzzy-search ranking) directly instead
- * of a hand-duplicated copy.
- * @type {import('rollup').RollupOptions}
+ * Browser-targeted bundles for the property inspectors (src/pi/) - separate
+ * from pluginConfig above because they run in the PI's browser context, not
+ * Node, and are loaded via a plain <script> tag rather than as the plugin's
+ * CodePath entry point. Exist so the PI can import src/actiondb/search.ts
+ * (the tested fuzzy-search ranking) directly instead of a hand-duplicated
+ * copy.
+ * @returns {import('rollup').RollupOptions}
  */
-const actionBrowserConfig = {
-	input: "src/pi/action-browser.ts",
-	output: {
-		file: `${sdPlugin}/ui/js/action-browser.js`,
-		format: "iife",
-		sourcemap: isWatching
-	},
-	plugins: [
-		typescript({
-			tsconfig: "src/pi/tsconfig.json",
-			mapRoot: isWatching ? "./" : undefined
-		}),
-		nodeResolve({ browser: true }),
-		commonjs(),
-		!isWatching && terser()
-	]
-};
+function piConfig(name) {
+	return {
+		input: `src/pi/${name}.ts`,
+		output: {
+			file: `${sdPlugin}/ui/js/${name}.js`,
+			format: "iife",
+			sourcemap: isWatching
+		},
+		plugins: [
+			typescript({
+				tsconfig: "src/pi/tsconfig.json",
+				mapRoot: isWatching ? "./" : undefined
+			}),
+			nodeResolve({ browser: true }),
+			commonjs(),
+			!isWatching && terser()
+		]
+	};
+}
 
-export default [pluginConfig, actionBrowserConfig];
+export default [pluginConfig, piConfig("action-browser"), piConfig("fx-browser")];

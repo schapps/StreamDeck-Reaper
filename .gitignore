@@ -3,6 +3,7 @@ dist/
 build/
 com.schapps.reaper.sdPlugin/bin/
 com.schapps.reaper.sdPlugin/ui/js/action-browser.js
+com.schapps.reaper.sdPlugin/ui/js/fx-browser.js
 com.schapps.reaper.sdPlugin/data/actions-imported.json
 *.streamDeckPlugin
 *.log

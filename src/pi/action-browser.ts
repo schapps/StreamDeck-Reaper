@@ -10,6 +10,7 @@
 import { searchActions } from "../actiondb/search.js";
 import type { ActionDatabase, ActionEntry } from "../actiondb/types.js";
 import type { GlobalSettings } from "../reaper/global-settings.js";
+import { requireEl, setFieldValue, streamDeckClient } from "./sdpi.js";
 
 interface ActionSettingsShape {
 	actionId?: string;
@@ -20,12 +21,6 @@ interface ActionSettingsShape {
 const DEBOUNCE_MS = 120;
 const RECENTS_CAP = 20;
 const RESULTS_LIMIT = 200; // render cap - the full DB can be thousands of rows
-
-function requireEl<T extends Element>(id: string): T {
-	const el = document.getElementById(id);
-	if (!el) throw new Error(`action-browser.ts: expected element #${id} to exist in the PI markup`);
-	return el as unknown as T;
-}
 
 let allActions: ActionEntry[] | null = null;
 
@@ -63,8 +58,7 @@ function main(): void {
 	// Only run on pages that actually have the action browser markup (run-action.html).
 	if (!document.getElementById("action-browser-modal")) return;
 
-	const client = (window as unknown as { SDPIComponents: { streamDeckClient: StreamDeckClient } }).SDPIComponents
-		.streamDeckClient;
+	const client = streamDeckClient();
 
 	const browseBtn = requireEl<HTMLButtonElement>("browse-actions-btn");
 	const modal = requireEl<HTMLElement>("action-browser-modal");
@@ -218,30 +212,6 @@ function main(): void {
 		closeModal();
 	}
 
-	/**
-	 * sdpi-textfield renders `<input @input="${t => this.value = t.target.value}">`
-	 * inside an open shadow root (confirmed against the real sdpi-components
-	 * v4.0.1 bundle source) - that's the ONLY path that updates the
-	 * component's own displayed value. Setting the outer custom element's
-	 * `.value` property directly does not reliably reach it. So: find the
-	 * real inner <input>, set ITS value, and dispatch a genuine 'input'
-	 * event on it - the exact same path actual typing takes, not a
-	 * best-effort imitation of it.
-	 */
-	function setFieldValue(elementId: string, value: string): void {
-		const el = document.getElementById(elementId) as (HTMLElement & { value?: string }) | null;
-		if (!el) return;
-		const innerInput = el.shadowRoot?.querySelector("input");
-		if (innerInput) {
-			innerInput.value = value;
-			innerInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
-		} else {
-			// Fallback for an unexpected shadow DOM shape - better than nothing.
-			el.value = value;
-		}
-		el.dispatchEvent(new Event("change", { bubbles: true }));
-	}
-
 	function getVisibleRows(): HTMLElement[] {
 		return [...resultsEl.querySelectorAll<HTMLElement>(".action-row")];
 	}
@@ -294,15 +264,6 @@ function main(): void {
 	modal.addEventListener("click", (e: MouseEvent) => {
 		if (e.target === modal) closeModal();
 	});
-}
-
-/** Minimal shape of window.SDPIComponents.streamDeckClient actually used here - verified against the real v4.0.1 bundle, see CLAUDE.md. */
-interface StreamDeckClient {
-	getGlobalSettings<T>(): Promise<T>;
-	setGlobalSettings<T>(settings: T): Promise<void>;
-	getSettings<T>(): Promise<T>;
-	setSettings<T>(settings: T): Promise<void>;
-	didReceiveSettings: { subscribe(handler: (msg: { payload: { settings: unknown } }) => void): void };
 }
 
 main();
