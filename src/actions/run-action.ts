@@ -105,7 +105,6 @@ export class RunAction extends SingletonAction<RunActionSettings> {
 	private async fire(action: KeyDownEvent<RunActionSettings>["action"], actionId: string): Promise<void> {
 		try {
 			await connectionManager.current.runCommands([actionId]);
-			await action.showOk();
 		} catch (e) {
 			streamDeck.logger.error(`Failed to run REAPER action "${actionId}": ${errorMessage(e)}`);
 			await action.showAlert();

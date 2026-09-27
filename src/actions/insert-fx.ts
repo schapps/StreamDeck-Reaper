@@ -75,7 +75,6 @@ export class InsertFx extends SingletonAction<InsertFxSettings> {
 			switch (result.status) {
 				case "ok":
 					streamDeck.logger.info(`Inserted "${result.fields[1] ?? settings.fxId}" on ${result.fields[0]} track(s).`);
-					await ev.action.showOk();
 					return;
 				case "error":
 					streamDeck.logger.warn(`Insert FX "${settings.fxId}" failed: ${result.message}`);

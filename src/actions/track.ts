@@ -134,7 +134,6 @@ export class Track extends SingletonAction<TrackSettings> {
 		try {
 			await connectionManager.current.runCommands(commands);
 			stateManager.notifyActivity();
-			await ev.action.showOk();
 		} catch (e) {
 			const indices = targets.map((t) => t.index).join(",");
 			streamDeck.logger.error(

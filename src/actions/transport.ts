@@ -96,7 +96,6 @@ export class Transport extends SingletonAction<TransportSettings> {
 		try {
 			await connectionManager.current.runCommands([actionId]);
 			stateManager.notifyActivity();
-			await ev.action.showOk();
 		} catch (e) {
 			streamDeck.logger.error(`Transport (${fn}) failed: ${e instanceof Error ? e.message : String(e)}`);
 			await ev.action.showAlert();
